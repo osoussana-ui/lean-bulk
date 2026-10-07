@@ -1,0 +1,1941 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Lean bulk</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#DCE2E5">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Lean bulk">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#DCE2E5; --surface:#F4F7F8; --ink:#12202A; --muted:#566772; --line:#C3CCD1;
+  --accent:#2B4BDB; --on-accent:#fff; --protein:#2B4BDB; --carb:#D99A12; --fat:#CF4A35;
+  --band:rgba(43,75,219,.14); --good:#1E8A5A; --warn:#B8650F;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F171C; --surface:#18232A; --ink:#E7EDF0; --muted:#8FA0AB; --line:#2B3A43;
+    --accent:#7C93FF; --on-accent:#0F171C; --protein:#7C93FF; --carb:#F0B73A; --fat:#F0725C;
+    --band:rgba(124,147,255,.18); --good:#4CC38A; --warn:#F0A04B;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F171C; --surface:#18232A; --ink:#E7EDF0; --muted:#8FA0AB; --line:#2B3A43;
+  --accent:#7C93FF; --on-accent:#0F171C; --protein:#7C93FF; --carb:#F0B73A; --fat:#F0725C;
+  --band:rgba(124,147,255,.18); --good:#4CC38A; --warn:#F0A04B;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--body);}
+main{max-width:520px;margin:0 auto;padding:16px 16px 110px}
+h1{font:700 30px/1 var(--display);margin:4px 0 14px;letter-spacing:.2px}
+h2{font:600 20px/1.1 var(--display);margin:0 0 10px}
+.card{background:var(--surface);border-radius:14px;padding:16px;margin-bottom:14px}
+.row{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.num{font-family:var(--display);font-weight:700;letter-spacing:.2px;font-variant-numeric:tabular-nums}
+.big{font-size:56px;line-height:.95}
+.unit{font:500 20px var(--display);color:var(--muted);margin-left:4px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.pace{text-align:right}
+.pace .num{font-size:30px;line-height:1}
+.pill{display:inline-block;font-size:13px;font-weight:600;padding:2px 9px;border-radius:99px;border:1.5px solid currentColor}
+.pill.good{color:var(--good)} .pill.warn{color:var(--warn)} .pill.idle{color:var(--muted)}
+svg.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart text{font:11px var(--body);fill:var(--muted)}
+.empty{padding:26px 8px;text-align:center}
+.empty p{margin:0 0 12px}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--accent);color:var(--on-accent);border:0;border-radius:10px;padding:11px 16px;font-weight:600;min-height:44px}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+.btn.link{background:none;border:0;color:var(--accent);padding:6px 2px;min-height:0;font-weight:500;text-decoration:underline}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+label{display:block;font-size:14px;color:var(--muted);margin-bottom:4px}
+input[type=number],input[type=date],input[type=text],select{
+  width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);
+  border-radius:10px;padding:10px 12px;min-height:44px;appearance:none;-webkit-appearance:none}
+input[type=range]{width:100%;accent-color:var(--accent);height:32px;margin:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{margin-bottom:12px}
+.seg{display:flex;background:var(--bg);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;color:var(--muted);border-radius:8px;padding:8px 4px;min-height:40px;font-weight:600;font-size:14px;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1.5px var(--accent) inset}
+.log{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.hist li:first-child{border-top:0}
+.hist .x{background:none;border:0;color:var(--muted);font-size:22px;line-height:1;min-width:44px;min-height:44px}
+.bar{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:10px 0 14px;background:var(--line)}
+.bar span{display:block;height:100%}
+.macro{display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.macro:first-of-type{border-top:0}
+.sw{width:14px;height:14px;border-radius:4px}
+.macro .g{font-family:var(--display);font-weight:700;font-size:26px;line-height:1;text-align:right}
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
+  display:flex;padding:6px 12px calc(env(safe-area-inset-bottom,0px) + 6px);gap:8px;justify-content:center}
+.tabs button{flex:1;max-width:240px;border:0;background:transparent;color:var(--muted);padding:10px;border-radius:10px;font-weight:600;min-height:46px}
+.tabs button[aria-selected="true"]{color:var(--ink);background:var(--bg)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);transform:translateX(-50%);
+  background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;
+  transition:opacity .2s;max-width:90%;text-align:center}
+.toast.show{opacity:1}
+.row2{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.btn.sm{padding:8px 12px;min-height:40px;font-size:15px}
+.btn.danger{color:var(--fat);border-color:var(--fat)}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.exed{border-top:1px solid var(--line);padding:14px 0 6px}
+.exed:first-of-type{border-top:0;padding-top:0}
+.setrow{display:grid;grid-template-columns:34px 1fr 1fr 48px;gap:8px;align-items:center;margin-bottom:8px}
+.setrow input{text-align:center;font-family:var(--display);font-weight:600;font-size:20px}
+.setrow.head{margin-bottom:4px;font-size:13px;color:var(--muted);text-align:center}
+.chk{width:48px;height:44px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--muted);font-size:20px;line-height:1}
+.chk[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.cue{font-size:14px;color:var(--accent);margin:2px 0 12px}
+.lift{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.lift:first-of-type{border-top:0}
+.lift .num{font-size:22px}
+.checks{list-style:none;margin:0;padding:0}
+.checks li{display:grid;grid-template-columns:58px 1fr;gap:8px;padding:9px 0;border-top:1px solid var(--line);font-size:15px}
+.checks li:first-child{border-top:0}
+.tag{font-weight:600;font-size:14px}
+.tag.ok{color:var(--good)} .tag.flag{color:var(--warn)}
+details.card summary{cursor:pointer;font:600 20px/1.1 var(--display);min-height:32px;display:flex;align-items:center}
+details.card p{margin:10px 0 0;font-size:15px}
+.pbar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:4px 0 12px}
+.pbar span{display:block;height:100%}
+.chkrow{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;color:var(--ink);font-size:15px;cursor:pointer}
+.chkrow input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+label.btn{display:inline-flex;align-items:center;justify-content:center;font-size:16px;margin:0;cursor:pointer}
+.scan{position:fixed;inset:0;background:var(--bg);z-index:50;overflow:auto;
+  padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 16px)}
+.scan-in{max-width:520px;margin:0 auto}
+.scan video{width:100%;max-height:48vh;border-radius:14px;background:#000;object-fit:cover;margin-bottom:12px}
+.toast{z-index:60}
+.tabs button{padding:10px 4px}
+.cal-n{font-family:var(--display);font-weight:700;font-size:22px}
+.tag.info{color:var(--muted)}
+textarea{width:100%;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:10px;resize:vertical}
+.setn{height:44px;border-radius:10px;border:1.5px dashed var(--line);background:transparent;color:var(--muted);font-weight:600;padding:0}
+.setn[aria-pressed="true"]{border-style:solid;border-color:var(--carb);color:var(--carb)}
+.rest{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 70px);z-index:45;max-width:496px;margin:0 auto;
+  background:var(--ink);color:var(--bg);border-radius:12px;padding:8px 8px 8px 16px;display:flex;justify-content:space-between;align-items:center;font:600 24px var(--display)}
+.rest button{background:var(--bg);color:var(--ink);border:0;border-radius:8px;padding:8px 16px;font:600 15px var(--body);min-height:40px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <h1 id="appTitle">Lean bulk</h1>
+
+  <!-- TREND TAB -->
+  <section id="tab-trend" aria-labelledby="t-trend">
+    <div class="card">
+      <div class="row" style="align-items:flex-end">
+        <div>
+          <div class="muted small">7-day average</div>
+          <div class="num big" id="trendNow">–<span class="unit" id="trendUnit">kg</span></div>
+        </div>
+        <div class="pace">
+          <div class="num" id="paceNum">–</div>
+          <div class="muted small">per week</div>
+          <span class="pill idle" id="pacePill" style="margin-top:6px">Not enough data</span>
+        </div>
+      </div>
+      <div id="chartWrap" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card" id="verdictCard" hidden>
+      <h2>Adjustment</h2>
+      <p id="verdictText" style="margin:0 0 12px"></p>
+      <button class="btn" id="applyBtn" hidden></button>
+    </div>
+
+    <div class="card" id="weekCard" hidden>
+      <h2>Weekly check-in</h2>
+      <p id="weekFocus" style="margin:0 0 6px;font-weight:600"></p>
+      <ul class="checks" id="weekList"></ul>
+    </div>
+
+    <div class="card" id="measCard" hidden>
+      <h2>Your measured maintenance</h2>
+      <p id="measText" style="margin:0"></p>
+      <button class="btn ghost sm" id="measBtn" hidden style="margin-top:12px"></button>
+    </div>
+
+    <div class="card">
+      <h2>Log today</h2>
+      <div class="log">
+        <div><label for="logDate">Date</label><input type="date" id="logDate"></div>
+        <div><label for="logW">Weight (<span class="u">kg</span>)</label><input type="number" id="logW" inputmode="decimal" step="0.1" placeholder="0.0"></div>
+        <div><label for="logC">Calories eaten (optional)</label><input type="number" id="logC" inputmode="numeric" placeholder="e.g. 2900"></div>
+        <button class="btn" id="logBtn" style="align-self:end">Log</button>
+      </div>
+      <p class="muted small" style="margin:10px 0 0">Weigh in at the same time each morning. Logging a date again replaces it. Adding calories lets the app measure your real maintenance.</p>
+    </div>
+
+    <div class="card" id="bodyCard">
+      <h2>Body measurements</h2>
+      <div class="field"><label for="mDate">Date</label><input type="date" id="mDate"></div>
+      <div class="grid2 field">
+        <div><label for="mWaist">Waist (<span class="mu">cm</span>)</label><input type="number" id="mWaist" inputmode="decimal" step="0.1"></div>
+        <div><label for="mChest">Chest (<span class="mu">cm</span>)</label><input type="number" id="mChest" inputmode="decimal" step="0.1"></div>
+      </div>
+      <div class="grid2 field">
+        <div><label for="mArm">Arm (<span class="mu">cm</span>)</label><input type="number" id="mArm" inputmode="decimal" step="0.1"></div>
+        <div><label for="mThigh">Thigh (<span class="mu">cm</span>)</label><input type="number" id="mThigh" inputmode="decimal" step="0.1"></div>
+      </div>
+      <button class="btn" id="mBtn">Log measurements</button>
+      <div id="mOut" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card" id="histCard" hidden>
+      <h2>Recent weigh-ins</h2>
+      <ul class="hist" id="hist"></ul>
+    </div>
+  </section>
+
+  <!-- TARGETS TAB -->
+  <section id="tab-targets" hidden>
+    <div class="card">
+      <h2>Daily targets</h2>
+      <div class="row" style="align-items:flex-end">
+        <div class="num big" id="kcal">–<span class="unit">kcal</span></div>
+        <div class="muted small" style="text-align:right"><span id="tdeeLbl">Maintenance</span><br><b id="tdee" class="num" style="font-size:22px;color:var(--ink)">–</b></div>
+      </div>
+      <div class="bar" id="macroBar" aria-hidden="true"></div>
+      <div id="macroRows"></div>
+    </div>
+
+    <div class="card">
+      <h2>Your numbers</h2>
+      <div class="field"><label>Goal</label>
+        <div class="seg" id="goalSeg"><button data-v="bulk" aria-pressed="true">Lean bulk</button><button data-v="maintain" aria-pressed="false">Maintain</button><button data-v="cut" aria-pressed="false">Cut</button></div></div>
+      <div class="grid2 field">
+        <div><label>Units</label><div class="seg" id="unitSeg"><button data-v="kg" aria-pressed="false">kg · cm</button><button data-v="lb" aria-pressed="true">lb · in</button></div></div>
+        <div><label>Sex</label><div class="seg" id="sexSeg"><button data-v="m" aria-pressed="true">Male</button><button data-v="f" aria-pressed="false">Female</button></div></div>
+      </div>
+      <div class="grid2 field">
+        <div><label for="fAge">Age</label><input type="number" id="fAge" inputmode="numeric" min="14" max="90"></div>
+        <div><label for="fH">Height (<span id="hU">cm</span>)</label><input type="number" id="fH" inputmode="decimal" step="0.5"></div>
+      </div>
+      <div class="field"><label for="fW">Body weight (<span class="u">kg</span>)</label><input type="number" id="fW" inputmode="decimal" step="0.1"></div>
+      <div class="grid2 field">
+        <div><label for="fBF">Body fat % (optional)</label><input type="number" id="fBF" inputmode="decimal" step="0.5" placeholder="e.g. 15"></div>
+        <div><label for="fExp">Lifting experience</label>
+          <select id="fExp"><option value="novice">Under 2 years</option><option value="intermediate">2 to 5 years</option><option value="advanced">5+ years</option></select></div>
+      </div>
+      <div class="field">
+        <label for="fAct">Activity level</label>
+        <select id="fAct">
+          <option value="1.2">Sedentary: desk job, lifting only</option>
+          <option value="1.375">Light: on your feet some, 3 to 4 sessions</option>
+          <option value="1.55">Moderate: active day, 4 to 5 sessions</option>
+          <option value="1.725">High: physical job or 6 to 7 sessions</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fMeth">Maintenance method</label>
+        <select id="fMeth">
+          <option value="mifflin">Mifflin–St Jeor (age, height, weight)</option>
+          <option value="cunningham">Cunningham (uses body fat %)</option>
+          <option value="katch">Katch–McArdle (uses body fat %)</option>
+          <option value="measured">Measured from my logs</option>
+        </select>
+        <div class="muted small" id="methNote" style="margin-top:6px"></div>
+      </div>
+      <div class="field">
+        <div class="row"><label for="fSur" id="surLbl" style="margin:0">Surplus</label><b class="num" id="oSur" style="font-size:22px">+300 kcal</b></div>
+        <input type="range" id="fSur" min="0" max="700" step="25">
+        <button class="btn link" id="sugBtn" style="text-align:left">Use the suggested surplus for my experience</button>
+      </div>
+      <div class="field">
+        <div class="row"><label for="fPro" style="margin:0">Protein</label><b class="num" id="oPro" style="font-size:22px">1.8 g/kg</b></div>
+        <input type="range" id="fPro" min="1.4" max="3" step="0.1">
+      </div>
+      <div class="field">
+        <div class="row"><label for="fFat" style="margin:0">Fat</label><b class="num" id="oFat" style="font-size:22px">25% of calories</b></div>
+        <input type="range" id="fFat" min="15" max="40" step="1">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label for="fMeals">Protein meals per day</label>
+        <select id="fMeals"><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Evidence check</h2>
+      <ul class="checks" id="checks"></ul>
+    </div>
+
+    <div class="card" id="calCard">
+      <h2>Personal calibration</h2>
+      <p id="calText" style="margin:0"></p>
+      <ul class="checks" id="calList" style="margin-top:10px" hidden></ul>
+    </div>
+
+
+    <details class="card">
+      <summary>How these numbers are calculated</summary>
+      <p><b>Maintenance.</b> Mifflin–St Jeor estimates resting burn from age, height, weight and sex. Cunningham and Katch–McArdle use fat-free mass, which suits lifters if you know your body fat %. All three are multiplied by an activity factor and can be off by 10 to 15%, which is why the measured option exists.</p>
+      <p><b>Measured maintenance.</b> Average calories eaten minus the energy stored as weight change, using your weight trend over the last four weeks. Stored energy is estimated at about 1,800 kcal per kg of lean tissue and 9,400 per kg of fat, mixed by how fast you are gaining. It needs 10+ logged days and two weeks of weigh-ins, and it is only as accurate as your calorie logging.</p>
+      <p><b>Surplus and pace.</b> A review of off-season nutrition for natural lifters (Iraki et al., 2019) suggests a 10 to 20% surplus and 0.25 to 0.5% of bodyweight per week for novices and intermediates, and more conservative for advanced lifters. In elite athletes, slower gain (about 0.16% per week) was around 85% lean mass versus around 65% at 0.38% per week (Garthe et al.). The intermediate and advanced bands here are an interpolation, not figures from one study.</p>
+      <p><b>Cutting and maintenance.</b> For a cut, the review by Helms et al. (2014) recommends a calorie level that produces about 0.5 to 1% bodyweight loss per week, with 2.3 to 3.1 g of protein per kg of lean mass and 15 to 30% of calories from fat. In athletes, slower loss (about 0.7% per week) kept more lean mass than faster loss (about 1.4%). Those protein figures come from lean competitors, so the app uses 1.8 to 2.7 g/kg of bodyweight when it does not know your body fat. Maintenance mode targets weight within about 0.1% per week.</p>
+      <p><b>Protein, fat, carbs.</b> Protein 1.6 to 2.2 g/kg per day (the 1.6 breakpoint comes from the Morton et al., 2018 meta-analysis), 0.40 to 0.55 g/kg per meal across 3 to 6 meals. Fat 0.5 to 1.5 g/kg. Carbs at least 3 to 5 g/kg to fuel training.</p>
+      <p>These are population averages. Your weight trend is the final judge, and the Trend tab adjusts your calories from it.</p>
+    </details>
+    <div class="card" id="dataCard">
+      <h2>Your data</h2>
+      <p class="muted small" style="margin:0 0 12px">Everything is stored in this browser only. Export a backup now and then, especially before clearing website data. iPhone Safari can also clear storage for sites you have not opened in a while.</p>
+      <div class="row2">
+        <button class="btn" id="expBtn">Export backup</button>
+        <label class="btn ghost">Import backup<input type="file" accept=".json,application/json" id="impFile" hidden></label>
+        <button class="btn link" id="txtBtn">Backup text</button>
+      </div>
+      <div id="txtBox" hidden style="margin-top:12px">
+        <label for="txtArea">Copy this to keep it, or paste a backup here and restore</label>
+        <textarea id="txtArea" rows="6" spellcheck="false"></textarea>
+        <div class="row2" style="margin-top:8px"><button class="btn ghost sm" id="txtCopy">Copy</button><button class="btn ghost sm" id="txtRestore">Restore from this text</button></div>
+      </div>
+      <div id="impBox" hidden style="margin-top:12px">
+        <p id="impMsg" style="margin:0 0 10px"></p>
+        <div class="row2"><button class="btn danger ghost" id="impGo">Replace my data</button><button class="btn link" id="impNo">Cancel</button></div>
+      </div>
+      <p class="muted small" id="bkNote" style="margin:12px 0 0"></p>
+    </div>
+
+    <p style="padding:0 4px"><button class="btn link" id="wipeBtn">Erase all data</button></p>
+  </section>
+
+  <!-- WORKOUT TAB -->
+  <section id="tab-workout" hidden></section>
+
+  <!-- FOOD TAB -->
+  <section id="tab-food" hidden>
+    <div class="card">
+      <div class="row"><h2 style="margin:0">Food</h2><input type="date" id="fDate" style="max-width:160px" aria-label="Day"></div>
+      <div id="fTotals" style="margin-top:14px"></div>
+      <label class="chkrow"><input type="checkbox" id="fComplete"><span>I logged everything I ate this day</span></label>
+      <p class="muted small" style="margin:6px 0 0 32px">Only complete days feed your measured maintenance and calibration.</p>
+    </div>
+
+    <div class="card">
+      <h2>Add food</h2>
+      <div class="row2">
+        <button class="btn" id="scanBtn">Scan barcode</button>
+        <button class="btn ghost" id="libBtn">My foods</button>
+        <button class="btn ghost" id="manBtn">Enter by hand</button>
+        <button class="btn ghost" id="copyBtn">Copy previous day</button>
+      </div>
+    </div>
+
+    <div class="card" id="foodForm" hidden>
+      <h2 id="ffTitle">Add food</h2>
+      <div class="field"><label for="ffName">Name</label><input type="text" id="ffName" autocomplete="off" placeholder="Greek yogurt"></div>
+      <div class="grid2 field">
+        <div><label for="ffUnit">One serving is</label><input type="text" id="ffUnit" autocomplete="off" placeholder="170 g tub"></div>
+        <div><label for="ffQ">Servings eaten</label><input type="number" id="ffQ" inputmode="decimal" step="0.25" value="1"></div>
+      </div>
+      <div class="grid2 field">
+        <div><label for="ffK">Calories per serving</label><input type="number" id="ffK" inputmode="decimal" placeholder="optional"></div>
+        <div><label for="ffP">Protein (g)</label><input type="number" id="ffP" inputmode="decimal"></div>
+      </div>
+      <div class="grid2 field">
+        <div><label for="ffC">Carbs (g)</label><input type="number" id="ffC" inputmode="decimal"></div>
+        <div><label for="ffF">Fat (g)</label><input type="number" id="ffF" inputmode="decimal"></div>
+      </div>
+      <div class="field"><label for="ffBar">Barcode (optional)</label><input type="text" id="ffBar" inputmode="numeric" autocomplete="off"></div>
+      <label class="chkrow"><input type="checkbox" id="ffSave"><span>Save to my foods for next time</span></label>
+      <p class="muted small" id="ffPrev" style="margin:10px 0 12px"></p>
+      <div class="row2">
+        <button class="btn" id="ffAdd">Add to day</button>
+        <button class="btn ghost" id="ffCancel">Cancel</button>
+        <label class="btn ghost" id="labelWrap" hidden>Read a label photo<input type="file" accept="image/*" capture="environment" id="labelFile" hidden></label>
+      </div>
+      <p class="muted small" id="ffMsg" style="margin:10px 0 0"></p>
+    </div>
+
+    <div class="card" id="libCard" hidden>
+      <div class="row"><h2 style="margin:0">My foods</h2><button class="btn link" id="libClose">Close</button></div>
+      <div class="field" style="margin-top:10px"><label for="libQ">Search</label><input type="text" id="libQ" autocomplete="off" placeholder="Type a name"></div>
+      <ul class="hist" id="libList"></ul>
+    </div>
+
+    <div class="card" id="recentCard" hidden>
+      <h2>Recent foods</h2>
+      <ul class="hist" id="recentList"></ul>
+    </div>
+
+    <div class="card" id="dayCard" hidden>
+      <h2>Logged today</h2>
+      <ul class="hist" id="dayList"></ul>
+    </div>
+  </section>
+  <datalist id="exlist"></datalist>
+</main>
+
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button role="tab" id="t-trend" aria-selected="true" data-tab="trend">Trend</button>
+  <button role="tab" id="t-food" aria-selected="false" data-tab="food">Food</button>
+  <button role="tab" id="t-workout" aria-selected="false" data-tab="workout">Workouts</button>
+  <button role="tab" id="t-targets" aria-selected="false" data-tab="targets">Targets</button>
+</nav>
+  <div class="scan" id="scan" role="dialog" aria-modal="true" aria-label="Scan a barcode" hidden>
+    <div class="scan-in">
+      <div class="row" style="margin-bottom:12px"><h2 style="margin:0">Scan a barcode</h2><button class="btn link" id="scanClose">Close</button></div>
+      <video id="scanVid" playsinline muted hidden></video>
+      <p id="scanMsg" style="margin:0 0 14px"></p>
+      <div class="row2" style="margin-bottom:14px">
+        <label class="btn ghost">Photo of barcode<input type="file" accept="image/*" capture="environment" id="scanFile" hidden></label>
+      </div>
+      <div class="field"><label for="scanCode">Or type the number under the barcode</label>
+        <div class="row2" style="flex-wrap:nowrap"><input type="text" id="scanCode" inputmode="numeric" autocomplete="off" placeholder="e.g. 0123456789012"><button class="btn" id="scanUse">Use</button></div></div>
+    </div>
+  </div>
+<div class="rest" id="restBar" role="timer" hidden><span id="restTxt"></span><button id="restSkip">Skip</button></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js" async></script>
+<script>
+(function(){
+  var KEY = 'leanbulk-v1';
+  var LB = 2.20462;
+  var SUR_PCT = {novice:15, intermediate:12, advanced:8};    // suggested surplus, % of maintenance
+  var SUR_MAX = {novice:20, intermediate:15, advanced:10};   // upper comfort limit
+  var V = {kind:null,kcal:0,dir:0};    // last pace verdict, used by the weekly check-in
+  function goalOf(){ return (state.s && state.s.goal) || 'bulk'; }
+  // target weekly change in % of bodyweight (negative = loss)
+  function band(){
+    var g=goalOf();
+    if(g==='cut') return [-1.0,-0.5];
+    if(g==='maintain') return [-0.1,0.1];
+    var e=(state.s&&state.s.exp)||'novice';
+    return ({novice:[0.25,0.5], intermediate:[0.2,0.4], advanced:[0.1,0.25]})[e] || [0.25,0.5];
+  }
+  function bandText(){
+    var b=band(), g=goalOf();
+    if(g==='cut') return Math.abs(b[1])+' to '+Math.abs(b[0])+'% loss per week';
+    if(g==='maintain') return 'within 0.1% per week';
+    return b[0]+' to '+b[1]+'% gain per week';
+  }
+  function surRange(){ var g=goalOf(); return g==='cut' ? [-1000,0] : (g==='maintain' ? [-200,200] : [0,700]); }
+  function sugPct(){ var g=goalOf(); if(g==='cut') return -20; if(g==='maintain') return 0; return SUR_PCT[(state.s&&state.s.exp)||'novice']; }
+  function setTitle(){ var g=goalOf(); $('appTitle').textContent = g==='cut' ? 'Cut' : (g==='maintain' ? 'Maintenance' : 'Lean bulk'); }
+  // share of weight gain that is lean tissue, interpolated from athlete data (~85% at 0.16%/wk, ~65% at 0.38%/wk)
+  function leanFrac(pct){ return Math.max(0.5, Math.min(0.9, 0.85-(pct-0.16)/(0.38-0.16)*0.20)); }
+  // energy stored per kg of weight change: lean ~1800 kcal/kg, fat ~9400 kcal/kg
+  function edFor(pct){ if(pct<=0) return 7000; var f=leanFrac(pct); return f*1800+(1-f)*9400; }
+
+  var state = {
+    unit: 'lb',
+    s: { sex:'m', age:25, height:178, weight:72.6, activity:1.55, surplus:300, protein:1.8, fatPct:25, exp:'novice', bf:null, method:'mifflin', meals:4, goal:'bulk' },
+    entries: [],  // {d:'YYYY-MM-DD', w:kg}
+    routines: [], // {id,name,ex:[{name,sets,min,max}]}
+    sessions: [], // {id,d,name,routineId,items:[{name,sets:[{w:kg,r}]}]}
+    active: null,
+    foods: [],    // {id,name,barcode,unit,kcal,p,c,f} per serving
+    log: [],      // {id,d,name,q,unit,kcal,p,c,f} totals for the entry
+    complete: {}, // {'YYYY-MM-DD': true} days with everything logged
+    measures: [], // {d,waist,chest,arm,thigh} in cm
+    rest: 90,     // rest timer seconds, 0 = off
+    lastBackup: null
+  };
+
+  /* ---------- storage ---------- */
+  function load(){
+    try{
+      var raw = localStorage.getItem(KEY);
+      if(raw){
+        var p = JSON.parse(raw);
+        if(p && p.s && p.entries){ state = p; }
+      }
+    }catch(e){}
+    ensureDefaults();
+  }
+  function ensureDefaults(){
+    state.s = Object.assign({exp:'novice',bf:null,method:'mifflin',meals:4,goal:'bulk'}, state.s);
+    state.routines = state.routines || [];
+    state.sessions = state.sessions || [];
+    state.active = state.active || null;
+    state.foods = state.foods || [];
+    state.log = state.log || [];
+    state.complete = state.complete || {};
+    state.measures = state.measures || [];
+    if(state.rest==null) state.rest = 90;
+    if(state.lastBackup===undefined) state.lastBackup = null;
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  /* ---------- helpers ---------- */
+  function $(id){ return document.getElementById(id); }
+  function dayNum(d){ var p=d.split('-'); return Math.round(Date.UTC(+p[0],+p[1]-1,+p[2])/86400000); }
+  function todayStr(){
+    var n=new Date();
+    return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+  }
+  function dayLabel(n){
+    return new Date(n*86400000).toLocaleDateString(undefined,{month:'short',day:'numeric',timeZone:'UTC'});
+  }
+  function disp(kg){ return state.unit==='kg' ? kg : kg*LB; }
+  function undisp(v){ return state.unit==='kg' ? v : v/LB; }
+  function fmt(n,dp){ return Number(n).toFixed(dp==null?1:dp); }
+  function sorted(){ return state.entries.slice().sort(function(a,b){return dayNum(a.d)-dayNum(b.d);}); }
+  var toastT;
+  function toast(msg){
+    var t=$('toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('show');},2600);
+  }
+
+  /* ---------- calculations ---------- */
+  function slopeKgPerDay(list){
+    var n=list.length; if(n<3) return null;
+    var x0=dayNum(list[0].d), sx=0, sy=0, sxy=0, sxx=0;
+    list.forEach(function(e){ var x=dayNum(e.d)-x0, y=e.w; sx+=x; sy+=y; sxy+=x*y; sxx+=x*x; });
+    var den=n*sxx-sx*sx;
+    return den ? (n*sxy-sx*sy)/den : null;
+  }
+  function calDays28(){
+    var es=sorted(); if(!es.length) return 0;
+    var last=dayNum(es[es.length-1].d);
+    return es.filter(function(e){return kcalOf(e)>0 && dayNum(e.d)>=last-27;}).length;
+  }
+  // maintenance = average intake minus energy stored as weight change
+  function measuredTDEE(){
+    var es=sorted(); if(es.length<8) return null;
+    var last=dayNum(es[es.length-1].d);
+    var win=es.filter(function(e){return dayNum(e.d)>=last-27;});
+    var cal=win.filter(function(e){return kcalOf(e)>0;});
+    if(win.length<8 || cal.length<10) return null;
+    if(last-dayNum(win[0].d)<13) return null;
+    var slope=slopeKgPerDay(win); if(slope==null) return null;
+    var ma=movingAvg(es), wNow=ma[ma.length-1];
+    var pct=slope*7/wNow*100, ed=edFor(pct);
+    var avg=cal.reduce(function(a,e){return a+kcalOf(e);},0)/cal.length;
+    var t=avg-slope*ed;
+    if(!(t>1000 && t<6500)) return null;
+    return {tdee:t, days:cal.length, pct:pct, lean:pct>0?leanFrac(pct):null};
+  }
+  function calc(){
+    var s=state.s, m=measuredTDEE(), method=s.method||'mifflin';
+    var mifflin=10*s.weight+6.25*s.height-5*s.age+(s.sex==='m'?5:-161);
+    var hasBF = s.bf>3 && s.bf<60;
+    var tdee=mifflin*s.activity, label='Mifflin–St Jeor', note='';
+    if(method==='measured'){
+      if(m){ tdee=m.tdee; label='measured'; }
+      else note='Not enough logged data yet (needs 10+ days with calories and two weeks of weigh-ins), so Mifflin–St Jeor is used.';
+    } else if(method==='katch' || method==='cunningham'){
+      if(hasBF){
+        var ffm=s.weight*(1-s.bf/100);
+        tdee=(method==='katch' ? 370+21.6*ffm : 500+22*ffm)*s.activity;
+        label=method==='katch' ? 'Katch–McArdle' : 'Cunningham';
+      } else note='Enter body fat % to use this equation. Mifflin–St Jeor is used for now.';
+    }
+    var kcal=tdee+s.surplus;
+    var p=s.protein*s.weight;
+    var f=kcal*(s.fatPct/100)/9;
+    var c=Math.max(0,(kcal-p*4-f*9)/4);
+    return {tdee:tdee,kcal:kcal,p:p,f:f,c:c,label:label,note:note,measured:m};
+  }
+
+  function movingAvg(es){
+    var d = es.map(function(e){return dayNum(e.d);});
+    return es.map(function(e,i){
+      var sum=0,n=0;
+      for(var j=0;j<=i;j++){ if(d[j]>d[i]-7){ sum+=es[j].w; n++; } }
+      return sum/n;
+    });
+  }
+
+  function pace(es, ma){
+    if(es.length<4) return null;
+    var last = dayNum(es[es.length-1].d);
+    var rec = es.filter(function(e){return dayNum(e.d)>=last-13;});
+    if(rec.length<4) return null;
+    var x0 = dayNum(rec[0].d);
+    if(last-x0 < 6) return null;
+    var n=rec.length, sx=0, sy=0, sxy=0, sxx=0;
+    rec.forEach(function(e){
+      var x=dayNum(e.d)-x0, y=e.w; sx+=x; sy+=y; sxy+=x*y; sxx+=x*x;
+    });
+    var den = n*sxx - sx*sx;
+    if(den===0) return null;
+    var slope = (n*sxy - sx*sy)/den;       // kg per day
+    var perWeek = slope*7;
+    var w = ma[ma.length-1];
+    return { kg:perWeek, pct:perWeek/w*100, w:w };
+  }
+
+  /* ---------- chart ---------- */
+  function niceStep(r){
+    var steps=[0.25,0.5,1,2,5,10,20];
+    for(var i=0;i<steps.length;i++){ if(r/steps[i] <= 5) return steps[i]; }
+    return 20;
+  }
+  function drawChart(es, ma){
+    var wrap=$('chartWrap');
+    if(es.length<2){
+      wrap.innerHTML = '<div class="empty"><p class="muted">Log two or more weigh-ins to see your trend and the target pace.</p>' +
+        '<button class="btn ghost" id="sampleBtn">Try with sample data</button></div>';
+      $('sampleBtn').onclick = loadSample;
+      return;
+    }
+    var W=340,H=230,L=38,R=10,T=12,B=26;
+    var days=es.map(function(e){return dayNum(e.d);});
+    var d0=days[0];
+    var d1=Math.max(days[days.length-1], dayNum(todayStr()));
+    var span=Math.max(d1-d0,7);
+    var w0=es[0].w;
+    function lo(x){ return w0*(1+band()[0]/100*(x-d0)/7); }
+    function hi(x){ return w0*(1+band()[1]/100*(x-d0)/7); }
+    var vals=es.map(function(e){return disp(e.w);}).concat([disp(w0),disp(hi(d0+span)),disp(lo(d0+span))]);
+    var ymin=Math.min.apply(null,vals), ymax=Math.max.apply(null,vals);
+    var pad=Math.max((ymax-ymin)*0.08, state.unit==='kg'?0.3:0.6);
+    ymin-=pad; ymax+=pad;
+    function X(d){ return L + (d-d0)/span*(W-L-R); }
+    function Y(v){ return T + (1-(v-ymin)/(ymax-ymin))*(H-T-B); }
+    var step=niceStep(ymax-ymin), s='';
+    // grid + y labels
+    for(var t=Math.ceil(ymin/step)*step; t<=ymax; t+=step){
+      var y=Y(t);
+      s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" stroke="var(--line)" stroke-width="1"/>';
+      s+='<text x="'+(L-6)+'" y="'+(y+4)+'" text-anchor="end">'+fmt(t,step<1?2:0).replace(/\.00$/,'')+'</text>';
+    }
+    // x labels
+    for(var i=0;i<4;i++){
+      var dd=d0+Math.round(span*i/3);
+      s+='<text x="'+X(dd)+'" y="'+(H-6)+'" text-anchor="'+(i===0?'start':(i===3?'end':'middle'))+'">'+dayLabel(dd)+'</text>';
+    }
+    // band
+    var xa=X(d0), xb=X(d0+span);
+    s+='<polygon points="'+xa+','+Y(disp(lo(d0)))+' '+xb+','+Y(disp(lo(d0+span)))+' '+xb+','+Y(disp(hi(d0+span)))+' '+xa+','+Y(disp(hi(d0)))+'" fill="var(--band)"/>';
+    s+='<line x1="'+xa+'" y1="'+Y(disp(lo(d0)))+'" x2="'+xb+'" y2="'+Y(disp(lo(d0+span)))+'" stroke="var(--accent)" stroke-width="1" stroke-dasharray="4 4" opacity=".6"/>';
+    s+='<line x1="'+xa+'" y1="'+Y(disp(hi(d0)))+'" x2="'+xb+'" y2="'+Y(disp(hi(d0+span)))+'" stroke="var(--accent)" stroke-width="1" stroke-dasharray="4 4" opacity=".6"/>';
+    s+='<text x="'+(xb-4)+'" y="'+(Y(disp(hi(d0+span)))-6)+'" text-anchor="end" style="fill:var(--accent)">Target pace</text>';
+    // raw dots
+    es.forEach(function(e,i){
+      s+='<circle cx="'+X(days[i])+'" cy="'+Y(disp(e.w))+'" r="2.6" fill="var(--muted)" opacity=".7"/>';
+    });
+    // moving average line
+    var pts=es.map(function(e,i){return X(days[i])+','+Y(disp(ma[i]));}).join(' ');
+    s+='<polyline points="'+pts+'" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
+    var li=es.length-1;
+    s+='<circle cx="'+X(days[li])+'" cy="'+Y(disp(ma[li]))+'" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>';
+    wrap.innerHTML='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Bodyweight chart with 7-day average and target pace band">'+s+'</svg>';
+  }
+
+  function renderMeas(es){
+    var card=$('measCard'), t=$('measText'), b=$('measBtn');
+    if(!es.length){ card.hidden=true; return; }
+    card.hidden=false; b.hidden=true;
+    var m=measuredTDEE();
+    if(m){
+      var est=calc();
+      var mifflinOnly = (function(){ var q=state.s; return Math.round((10*q.weight+6.25*q.height-5*q.age+(q.sex==='m'?5:-161))*q.activity); })();
+      t.textContent='From ' + m.days + ' days of intake and your weight trend, you burn about ' + Math.round(m.tdee) + ' kcal a day. The equation estimate is ' + mifflinOnly + '. ' +
+        (state.s.method==='measured' ? 'Your targets are using the measured number.' : 'It gets sharper with every logged day.');
+      if(state.s.method!=='measured'){
+        b.textContent='Use measured maintenance'; b.hidden=false;
+        b.onclick=function(){ state.s.method='measured'; save(); fillForm(); updateResults(); renderTrend(); toast('Targets now use your measured maintenance'); };
+      }
+    } else {
+      t.textContent='Log calories with your weight to measure what you actually burn, which beats any equation. Progress: ' + Math.min(calDays28(),10) + ' of 10 logged days, plus two weeks of weigh-ins.';
+    }
+  }
+
+  /* ---------- trend tab render ---------- */
+  function renderTrend(){
+    var es=sorted(), ma=movingAvg(es);
+    var u=state.unit;
+    document.querySelectorAll('.u').forEach(function(n){n.textContent=u;});
+    $('trendUnit').textContent=u;
+
+    if(es.length){
+      $('trendNow').firstChild.nodeValue = fmt(disp(ma[ma.length-1]));
+    } else {
+      $('trendNow').firstChild.nodeValue = '–';
+    }
+    drawChart(es,ma);
+
+    var p=pace(es,ma);
+    var pill=$('pacePill'), num=$('paceNum'), vc=$('verdictCard'), vt=$('verdictText'), ab=$('applyBtn');
+    ab.hidden=true; vc.hidden=false; V={kind:null,kcal:0,dir:0};
+    if(!p){
+      num.textContent='–';
+      pill.className='pill idle'; pill.textContent='Not enough data';
+      vt.textContent = es.length ? 'Pace appears after about a week of regular weigh-ins (at least four in the last two weeks).' : 'Log your first weigh-in below. After about a week, this card will tell you whether to eat more or less.';
+    } else {
+      var sign = p.kg>=0?'+':'−';
+      num.textContent = sign + fmt(Math.abs(disp(p.kg)),2) + ' ' + u;
+      var g=goalOf(), B=band(), BL=B[0], BH=B[1];
+      var midPct=(BL+BH)/2, target=midPct/100*p.w;
+      var diffKg=target-p.kg;                  // positive: needs more energy
+      var kcal=Math.round(Math.abs(diffKg)*edFor(midPct)/7/25)*25;
+      var rateTxt=(p.pct>=0?'gaining ':'losing ')+fmt(Math.abs(p.pct),2)+'% of bodyweight per week';
+      var comp=(g==='bulk' && p.pct>0.05) ? ' At this pace, roughly '+Math.round(leanFrac(p.pct)*100)+'% of the gain is likely lean mass (a rough estimate from athlete studies).' : '';
+      var below=p.pct<BL, above=p.pct>BH, rng=bandText();
+      if(below || above){
+        var more=diffKg>0; kcal=Math.max(kcal,100);
+        var lbl = g==='bulk' ? (below?'Too slow':'Too fast') : (g==='cut' ? (below?'Too fast':'Too slow') : (below?'Drifting down':'Drifting up'));
+        pill.className='pill warn'; pill.textContent=lbl;
+        var why='';
+        if(g==='bulk' && above) why=' Faster gain adds mostly fat without much extra muscle.';
+        if(g==='cut' && below) why=' In athletes, slower loss (about 0.7% per week) kept more lean mass than faster loss (about 1.4%).';
+        vt.textContent='You are '+rateTxt+'; your target is '+rng+'.'+why+' '+(more?'Adding':'Cutting')+' about '+kcal+' kcal a day should bring you to the middle of the range.'+comp;
+        ab.textContent=(more?'Add ':'Cut ')+kcal+' kcal '+(more?'to':'from')+' your daily target'; ab.hidden=false;
+        ab.onclick=function(){applyAdj(more?kcal:-kcal);};
+        V={kind:'adjust',kcal:kcal,dir:more?1:-1};
+      } else {
+        pill.className='pill good'; pill.textContent='On pace';
+        vt.textContent='You are '+rateTxt+', inside your '+rng+' target. Keep your targets where they are and check again next week.'+comp;
+      }
+    }
+    renderMeas(es);
+    renderBody();
+    renderWeek();
+
+    // history
+    var hc=$('histCard'), ul=$('hist');
+    hc.hidden = !es.length;
+    ul.innerHTML='';
+    es.slice().reverse().slice(0,10).forEach(function(e){
+      var li=document.createElement('li');
+      var left=document.createElement('span'); left.textContent=dayLabel(dayNum(e.d));
+      var right=document.createElement('span'); right.className='row';
+      var w=document.createElement('b'); w.className='num'; w.style.fontSize='22px'; w.textContent=fmt(disp(e.w))+' '+u;
+      var x=document.createElement('button'); x.className='x'; x.textContent='×'; x.setAttribute('aria-label','Delete '+dayLabel(dayNum(e.d))+' entry');
+      x.onclick=function(){
+        state.entries=state.entries.filter(function(z){return z.d!==e.d;});
+        syncWeight(); save(); renderTrend(); fillForm(); updateResults();
+      };
+      if(kcalOf(e)){ var cs=document.createElement('span'); cs.className='muted small'; cs.textContent=Math.round(kcalOf(e))+' kcal'; right.appendChild(cs); }
+      right.appendChild(w); right.appendChild(x);
+      li.appendChild(left); li.appendChild(right); ul.appendChild(li);
+    });
+  }
+
+  function syncWeight(){
+    var es=sorted();
+    if(es.length){ state.s.weight = movingAvg(es).slice(-1)[0]; }
+  }
+
+  function applyAdj(delta){
+    var rg=surRange(); state.s.surplus = Math.max(rg[0], Math.min(rg[1], state.s.surplus + delta));
+    save(); fillForm(); updateResults();
+    toast('Daily target is now ' + Math.round(calc().kcal) + ' kcal');
+    renderTrend();
+  }
+
+  /* ---------- logging ---------- */
+  function logWeight(){
+    var d=$('logDate').value, v=parseFloat($('logW').value);
+    if(!d){ toast('Pick a date first'); return; }
+    var kg=undisp(v);
+    if(!(kg>=30 && kg<=300)){ toast('Enter a weight between ' + (state.unit==='kg'?'30 and 300 kg':'66 and 660 lb')); return; }
+    var cRaw=$('logC').value.trim(), c=cRaw===''?null:parseFloat(cRaw);
+    if(c!==null && !(c>=500 && c<=10000)){ toast('Calories should be between 500 and 10,000'); return; }
+    var prev=state.entries.filter(function(e){return e.d===d;})[0];
+    if(c===null && prev && prev.c>0) c=prev.c;
+    state.entries=state.entries.filter(function(e){return e.d!==d;});
+    var entry={d:d,w:Math.round(kg*100)/100}; if(c!==null) entry.c=Math.round(c);
+    state.entries.push(entry);
+    syncWeight(); save();
+    $('logW').value=''; $('logC').value='';
+    renderTrend(); fillForm(); updateResults();
+    toast('Logged');
+  }
+
+  function loadSample(){
+    var es=[], logs=[], comp={}, n=new Date(), w=70, seed=7;
+    function rnd(){ seed=(seed*16807)%2147483647; return seed/2147483647; }
+    for(var i=55;i>=0;i--){
+      var dt=new Date(n.getFullYear(),n.getMonth(),n.getDate()-i);
+      var ds=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+      var trend=w*(1+0.0035*(55-i)/7);
+      es.push({d:ds,w:Math.round((trend+(rnd()-0.5)*0.9)*10)/10});
+      var P=145+(rnd()-0.5)*30, C=370+(rnd()-0.5)*90, F=85+(rnd()-0.5)*24;
+      logs.push({id:uid(),d:ds,name:'Sample day',q:1,unit:'day',kcal:4*P+4*C+9*F,p:P,c:C,f:F});
+      comp[ds]=true;
+    }
+    state.entries=es; state.log=logs; state.complete=comp;
+    syncWeight(); save(); renderTrend(); fillForm(); updateResults(); renderFood();
+  }
+
+  /* ---------- targets tab ---------- */
+  function fillForm(){
+    var s=state.s, u=state.unit;
+    $('fAge').value=s.age;
+    $('fH').value = fmt(u==='kg'?s.height:s.height/2.54, u==='kg'?0:1).replace(/\.0$/,'');
+    $('hU').textContent = u==='kg'?'cm':'in';
+    $('fW').value = fmt(disp(s.weight));
+    $('fAct').value = String(s.activity);
+    $('fSur').value = s.surplus;
+    $('fPro').value = s.protein;
+    $('fFat').value = s.fatPct;
+    var rg=surRange(), gl=goalOf();
+    $('fSur').min=rg[0]; $('fSur').max=rg[1]; $('fSur').value=s.surplus;
+    segSet('goalSeg',gl);
+    $('surLbl').textContent = gl==='cut' ? 'Deficit' : (gl==='maintain' ? 'Vs maintenance' : 'Surplus');
+    $('sugBtn').textContent = gl==='cut' ? 'Use the suggested deficit (about 20%)' : (gl==='maintain' ? 'Set to maintenance' : 'Use the suggested surplus for my experience');
+    setTitle();
+    $('fBF').value = s.bf==null ? '' : s.bf;
+    $('fExp').value = s.exp;
+    $('fMeth').value = s.method;
+    $('fMeals').value = String(s.meals);
+    segSet('unitSeg',u); segSet('sexSeg',s.sex);
+    document.querySelectorAll('.u').forEach(function(n){n.textContent=u;});
+  }
+  function segSet(id,v){
+    document.querySelectorAll('#'+id+' button').forEach(function(b){
+      b.setAttribute('aria-pressed', b.dataset.v===v ? 'true':'false');
+    });
+  }
+  function updateResults(){
+    var s=state.s, r=calc(), w=s.weight;
+    var sp=r.tdee ? s.surplus/r.tdee*100 : 0;
+    $('oSur').textContent=(s.surplus<0?'−':'+')+Math.abs(s.surplus)+' kcal · '+(sp<0?'−':'')+Math.abs(Math.round(sp))+'%';
+    $('oPro').textContent= state.unit==='kg' ? fmt(s.protein,1)+' g/kg' : fmt(s.protein/LB,2)+' g/lb';
+    $('oFat').textContent=s.fatPct+'% of calories';
+    $('kcal').firstChild.nodeValue=Math.round(r.kcal);
+    $('tdee').textContent=Math.round(r.tdee)+' kcal';
+    $('tdeeLbl').textContent = r.label==='measured' ? 'Maintenance (measured)' : 'Maintenance (' + r.label + ')';
+    $('methNote').textContent = r.note;
+    var pk=r.p*4, fk=r.f*9, ck=r.c*4, tot=pk+fk+ck||1;
+    var rows=[
+      ['Protein','var(--protein)',r.p,pk],
+      ['Carbs','var(--carb)',r.c,ck],
+      ['Fat','var(--fat)',r.f,fk]
+    ];
+    $('macroBar').innerHTML = rows.map(function(x){return '<span style="width:'+(x[3]/tot*100)+'%;background:'+x[1]+'"></span>';}).join('');
+    $('macroRows').innerHTML = rows.map(function(x){
+      return '<div class="macro"><span class="sw" style="background:'+x[1]+'"></span>' +
+        '<span>'+x[0]+'<br><span class="muted small">'+Math.round(x[3])+' kcal · '+Math.round(x[3]/tot*100)+'% · '+fmt(x[2]/w,1)+' g/kg</span></span>' +
+        '<span class="g">'+Math.round(x[2])+'<span class="unit" style="font-size:16px">g</span></span></div>';
+    }).join('');
+
+    // evidence checks
+    var goal=goalOf(), exp=s.exp||'novice', pkg=r.p/w, fkg=r.f/w, ckg=r.c/w, meals=s.meals||4, perMeal=r.p/meals;
+    var items=[];
+    function add(ok,txt){ items.push('<li><span class="tag '+(ok?'ok':'flag')+'">'+(ok?'OK':'Check')+'</span><span>'+txt+'</span></li>'); }
+    var asp=Math.abs(sp);
+    if(goal==='bulk'){
+      var mx=SUR_MAX[exp];
+      if(sp<5) add(false,'Surplus is '+fmt(sp,0)+'% of maintenance, which may be too small to see steady gain.');
+      else if(sp>mx) add(false,'Surplus is '+fmt(sp,0)+'% of maintenance, above the roughly '+mx+'% suggested for your experience. Extra surplus mostly adds fat.');
+      else add(true,'Surplus is '+fmt(sp,0)+'% of maintenance, within the suggested range for your experience (up to about '+mx+'%).');
+    } else if(goal==='maintain'){
+      if(asp<=3) add(true,'Calories are within 3% of maintenance, which should hold your weight steady.');
+      else add(false,'Calories are '+fmt(asp,0)+'% '+(sp>0?'above':'below')+' maintenance, so your weight will drift. Switch the goal to bulk or cut for a planned change.');
+    } else {
+      if(sp>-10) add(false,'Deficit is only '+fmt(asp,0)+'% below maintenance, which may be slower than the 0.5 to 1% per week target.');
+      else if(sp<-30) add(false,'Deficit is '+fmt(asp,0)+'% below maintenance. Larger deficits cost more lean mass; about 20% is a common starting point.');
+      else add(true,'Deficit is '+fmt(asp,0)+'% below maintenance, a moderate size that supports steady fat loss.');
+    }
+    var plo=goal==='cut'?1.8:1.6, phi=goal==='cut'?2.7:2.2;
+    if(goal==='cut' && s.bf>3 && s.bf<60){
+      var pl=r.p/(w*(1-s.bf/100));
+      if(pl<2.3) add(false,'Protein is '+fmt(pl,1)+' g per kg of lean mass. While cutting, 2.3 to 3.1 helps protect muscle.');
+      else if(pl>3.1) add(false,'Protein is '+fmt(pl,1)+' g per kg of lean mass. Above 3.1 has not shown extra benefit.');
+      else add(true,'Protein is '+fmt(pl,1)+' g per kg of lean mass, inside the 2.3 to 3.1 range used for cutting.');
+    } else if(pkg<plo) add(false,'Protein is '+fmt(pkg,1)+' g/kg, below the '+plo+' g/kg'+(goal==='cut'?' that helps protect muscle while cutting.':' where muscle gain tends to level off.'));
+    else if(pkg>phi) add(false,'Protein is '+fmt(pkg,1)+' g/kg. Above '+phi+' has not shown extra benefit, so those calories may serve you better as carbs.');
+    else add(true,'Protein is '+fmt(pkg,1)+' g/kg, inside the '+plo+' to '+phi+' g/kg range supported by the evidence.');
+    var lo=0.40*w, hi=0.55*w;
+    if(perMeal/w<0.40) add(false,meals+' meals gives '+Math.round(perMeal)+' g each ('+fmt(perMeal/w,2)+' g/kg). Aim for '+Math.round(lo)+' to '+Math.round(hi)+' g per meal, so fewer meals or more protein.');
+    else if(perMeal/w>0.55) add(false,meals+' meals gives '+Math.round(perMeal)+' g each ('+fmt(perMeal/w,2)+' g/kg). Spreading over more meals keeps each near '+Math.round(lo)+' to '+Math.round(hi)+' g.');
+    else add(true,meals+' meals gives about '+Math.round(perMeal)+' g protein each ('+fmt(perMeal/w,2)+' g/kg), inside the 0.40 to 0.55 g/kg per-meal range.');
+    if(goal==='cut'){
+      if(s.fatPct<15||s.fatPct>30) add(false,'Fat is '+s.fatPct+'% of calories. For a cut, 15 to 30% is the usual range.');
+      else add(true,'Fat is '+s.fatPct+'% of calories, inside the 15 to 30% range used for cutting.');
+    } else if(fkg<0.5) add(false,'Fat is '+fmt(fkg,2)+' g/kg, on the low side. Aim for at least about 0.5 g/kg.');
+    else if(fkg>1.5) add(false,'Fat is '+fmt(fkg,2)+' g/kg, which crowds out carbs. Try lowering the fat slider.');
+    else add(true,'Fat is '+fmt(fkg,2)+' g/kg, inside the 0.5 to 1.5 g/kg range.');
+    var cthr = goal==='cut' ? 2 : 3;
+    if(ckg<cthr) add(false,'Carbs are '+fmt(ckg,1)+' g/kg, low for hard training ('+cthr+'+ g/kg). Lower fat or raise calories.');
+    else add(true,'Carbs are '+fmt(ckg,1)+' g/kg, enough to fuel hard training.');
+    $('checks').innerHTML=items.join('');
+    renderCal();
+  }
+  function bindForm(){
+    function num(id,fn){
+      $(id).addEventListener('input',function(){
+        var v=parseFloat(this.value); if(isNaN(v)) return;
+        fn(v); save(); updateResults();
+      });
+    }
+    num('fAge',function(v){ state.s.age=Math.max(14,Math.min(90,v)); });
+    num('fH',function(v){ state.s.height = state.unit==='kg'? v : v*2.54; });
+    num('fW',function(v){ state.s.weight = undisp(v); });
+    $('fAct').addEventListener('change',function(){ state.s.activity=parseFloat(this.value); save(); updateResults(); });
+    num('fSur',function(v){ state.s.surplus=v; });
+    num('fPro',function(v){ state.s.protein=v; });
+    num('fFat',function(v){ state.s.fatPct=v; });
+    $('fBF').addEventListener('input',function(){
+      var v=parseFloat(this.value); state.s.bf=(isNaN(v)||v<=3||v>=60)?null:v; save(); updateResults();
+    });
+    $('fExp').addEventListener('change',function(){ state.s.exp=this.value; save(); updateResults(); renderTrend(); });
+    $('fMeth').addEventListener('change',function(){ state.s.method=this.value; save(); updateResults(); renderTrend(); });
+    $('fMeals').addEventListener('change',function(){ state.s.meals=parseInt(this.value,10); save(); updateResults(); });
+    $('sugBtn').onclick=function(){
+      var r=calc(), pct=sugPct()/100, rg=surRange();
+      state.s.surplus=Math.max(rg[0],Math.min(rg[1],Math.round(r.tdee*pct/25)*25));
+      save(); fillForm(); updateResults(); renderTrend();
+      toast('Set to '+(state.s.surplus<0?'−':'+')+Math.abs(state.s.surplus)+' kcal ('+Math.abs(Math.round(pct*100))+'% of maintenance)');
+    };
+    document.querySelectorAll('#goalSeg button').forEach(function(b){
+      b.onclick=function(){
+        var g=b.dataset.v; state.s.goal=g;
+        if(g==='cut' && state.s.protein<2.0) state.s.protein=2.2;
+        if(g!=='cut' && state.s.protein>2.4) state.s.protein=1.8;
+        var r=calc(), rg=surRange();
+        state.s.surplus=Math.max(rg[0],Math.min(rg[1],Math.round(r.tdee*sugPct()/100/25)*25));
+        save(); fillForm(); updateResults(); renderTrend(); renderWorkout();
+        toast(g==='cut'?'Cut mode: deficit and protein updated':(g==='maintain'?'Maintenance mode: calories set to maintenance':'Lean bulk mode: surplus updated'));
+      };
+    });
+    document.querySelectorAll('#unitSeg button').forEach(function(b){
+      b.onclick=function(){ state.unit=b.dataset.v; save(); fillForm(); updateResults(); renderTrend(); renderWorkout(); };
+    });
+    document.querySelectorAll('#sexSeg button').forEach(function(b){
+      b.onclick=function(){ state.s.sex=b.dataset.v; save(); fillForm(); updateResults(); };
+    });
+    var armed=false, wt;
+    $('wipeBtn').onclick=function(){
+      var b=this;
+      if(!armed){ armed=true; b.textContent='Tap again to erase everything'; wt=setTimeout(function(){armed=false;b.textContent='Erase all data';},3500); return; }
+      clearTimeout(wt); armed=false; b.textContent='Erase all data';
+      state.entries=[]; state.routines=[]; state.sessions=[]; state.active=null; state.foods=[]; state.log=[]; state.complete={}; state.measures=[]; state.lastBackup=null; stopRest(); W.view='home'; W.draft=null;
+      state.s={sex:'m',age:25,height:178,weight:72.6,activity:1.55,surplus:300,protein:1.8,fatPct:25,exp:'novice',bf:null,method:'mifflin',meals:4,goal:'bulk'};
+      save(); refreshAll(); toast('All data erased');
+    };
+  }
+
+  /* ---------- workouts ---------- */
+  var COMMON=['Bench press','Incline bench press','Incline dumbbell press','Dumbbell bench press','Chest fly','Overhead press','Lateral raise','Triceps pushdown','Skull crusher','Dip','Squat','Front squat','Leg press','Romanian deadlift','Deadlift','Leg curl','Leg extension','Calf raise','Hip thrust','Lunge','Barbell row','Dumbbell row','Lat pulldown','Pull-up','Chin-up','Seated cable row','Face pull','Barbell curl','Dumbbell curl','Hammer curl'];
+  var TEMPLATES={
+    ppl:[
+      {name:'Push',ex:[['Bench press',4,6,10],['Overhead press',3,8,12],['Incline dumbbell press',3,8,12],['Lateral raise',3,12,20],['Triceps pushdown',3,10,15]]},
+      {name:'Pull',ex:[['Barbell row',4,6,10],['Lat pulldown',3,8,12],['Seated cable row',3,8,12],['Face pull',3,12,20],['Dumbbell curl',3,10,15]]},
+      {name:'Legs',ex:[['Squat',4,5,8],['Romanian deadlift',3,8,10],['Leg press',3,10,15],['Leg curl',3,10,15],['Calf raise',4,10,20]]}
+    ],
+    ul:[
+      {name:'Upper',ex:[['Bench press',4,6,10],['Barbell row',4,6,10],['Overhead press',3,8,12],['Lat pulldown',3,8,12],['Dumbbell curl',3,10,15],['Triceps pushdown',3,10,15]]},
+      {name:'Lower',ex:[['Squat',4,5,8],['Romanian deadlift',3,8,10],['Leg press',3,10,15],['Leg curl',3,10,15],['Calf raise',4,10,20]]}
+    ],
+    fb:[
+      {name:'Full body',ex:[['Squat',3,5,8],['Bench press',3,6,10],['Barbell row',3,6,10],['Overhead press',3,8,12],['Romanian deadlift',3,8,10]]}
+    ]
+  };
+  var W={view:'home',draft:null,editId:null,lift:null};
+  var armT, armKey=null;
+  var R={end:0,timer:null,ctx:null,hideT:null};
+
+  function uid(){ return Math.random().toString(36).slice(2,9); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function nk(n){ return String(n||'').trim().toLowerCase(); }
+  function wfmt(kg){ return String(Math.round(disp(kg)*10)/10); }
+  function isBwName(n){ return /(pull|chin)[ -]?ups?\b|\bdips?\b|push[ -]?ups?\b|muscle[ -]?ups?\b/i.test(n||''); }
+  function e1rm(w,r){ if(!(r>0)) return 0; return r===1 ? w : w*(1+r/30); }
+  function work(sets){ return sets.filter(function(s){return !s.wu;}); }
+  // best estimated one-rep max from working sets; bw = bodyweight (kg) added to the load for bodyweight lifts
+  function bestE(sets,bw){ var b=0; work(sets).forEach(function(s){ b=Math.max(b,e1rm((s.w||0)+(bw||0),s.r)); }); return b; }
+  function arm(btn,key,label){
+    if(armKey===key){ clearTimeout(armT); armKey=null; return true; }
+    armKey=key; btn.dataset.orig=btn.textContent; btn.textContent=label;
+    clearTimeout(armT);
+    armT=setTimeout(function(){ armKey=null; if(btn.isConnected) btn.textContent=btn.dataset.orig; },3000);
+    return false;
+  }
+  function history(name){
+    var k=nk(name), out=[];
+    state.sessions.forEach(function(se){ se.items.forEach(function(it){ if(nk(it.name)===k) out.push({d:se.d,sets:it.sets,bw:it.bw||0}); }); });
+    out.sort(function(a,b){return dayNum(a.d)-dayNum(b.d);});
+    return out;
+  }
+  function suggest(name,t,bw){
+    var h=history(name), last=h.length?h[h.length-1]:null, ws=last?work(last.sets):[];
+    if(!ws.length){
+      return {w:bw?0:null,text: bw ? 'First time: start with bodyweight only and add weight once you can beat '+t.max+' reps on every set.' : 'First time: pick a weight you can lift for '+t.min+' clean reps with 1 to 2 reps left.'};
+    }
+    var top=0; ws.forEach(function(s){ if(s.w>top) top=s.w; });
+    var hit = ws.length>=t.sets && ws.every(function(s){return s.r>=t.max;});
+    if(hit){
+      var up = top + (state.unit==='kg'?2.5:5/LB);
+      return {w:up,text:'You hit '+t.max+' reps on every set last time. Go up to '+wfmt(up)+' '+state.unit+(bw?' added':'')+'.'};
+    }
+    if(bw && top===0) return {w:0,text:'Stay at bodyweight and beat last time. Reach '+t.max+' reps on every set, then add weight.'};
+    return {w:top,text:'Stay at '+wfmt(top)+' '+state.unit+(bw?' added':'')+' and beat last time. Reach '+t.max+' reps on every set, then add weight.'};
+  }
+  function mkItem(name,t,bw){
+    if(bw===undefined || bw===null) bw=isBwName(name);
+    var sg=suggest(name,t,!!bw), sets=[];
+    for(var i=0;i<t.sets;i++) sets.push({w:sg.w,r:null,done:false,wu:false});
+    return {name:name,target:t,bw:!!bw,sets:sets};
+  }
+  function spark(vals){
+    if(vals.length<2) return '';
+    var w=84,h=28,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rg=(mx-mn)||1;
+    var p=vals.map(function(v,i){return (i/(vals.length-1)*(w-4)+2).toFixed(1)+','+(h-3-(v-mn)/rg*(h-6)).toFixed(1);}).join(' ');
+    return '<svg width="84" height="28" viewBox="0 0 84 28" aria-hidden="true"><polyline points="'+p+'" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+  }
+  function liftMap(){
+    var map={};
+    state.sessions.slice().sort(function(a,b){return dayNum(a.d)-dayNum(b.d);}).forEach(function(se){
+      se.items.forEach(function(it){
+        var k=nk(it.name); if(!map[k]) map[k]={key:k,name:it.name,pts:[]};
+        var m=map[k]; m.name=it.name;
+        var e=bestE(it.sets,it.bw||0);
+        if(e>0) m.pts.push({d:se.d,e:e,sets:it.sets});
+      });
+    });
+    return Object.keys(map).map(function(k){return map[k];}).filter(function(m){return m.pts.length;});
+  }
+  function liftChart(pts){
+    if(pts.length<2) return '<p class="muted small" style="margin:0">Log this lift again to see your trend.</p>';
+    var W2=340,H2=170,L=40,Rr=10,T=12,B=24;
+    var d0=dayNum(pts[0].d), d1=dayNum(pts[pts.length-1].d), span=Math.max(d1-d0,1);
+    var vs=pts.map(function(p){return disp(p.e);}), mn=Math.min.apply(null,vs), mx=Math.max.apply(null,vs);
+    var pad=(mx-mn)*0.15||1; mn-=pad; mx+=pad;
+    function X(d){ return L+(d-d0)/span*(W2-L-Rr); }
+    function Y(v){ return T+(1-(v-mn)/(mx-mn))*(H2-T-B); }
+    var s='';
+    for(var i=0;i<=3;i++){
+      var v=mn+(mx-mn)*i/3, y=Y(v);
+      s+='<line x1="'+L+'" x2="'+(W2-Rr)+'" y1="'+y+'" y2="'+y+'" stroke="var(--line)"/><text x="'+(L-6)+'" y="'+(y+4)+'" text-anchor="end">'+Math.round(v)+'</text>';
+    }
+    s+='<text x="'+L+'" y="'+(H2-6)+'" text-anchor="start">'+dayLabel(d0)+'</text><text x="'+(W2-Rr)+'" y="'+(H2-6)+'" text-anchor="end">'+dayLabel(d1)+'</text>';
+    s+='<polyline points="'+pts.map(function(p){return X(dayNum(p.d))+','+Y(disp(p.e));}).join(' ')+'" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
+    pts.forEach(function(p){ s+='<circle cx="'+X(dayNum(p.d))+'" cy="'+Y(disp(p.e))+'" r="3.5" fill="var(--accent)"/>'; });
+    return '<svg class="chart" viewBox="0 0 '+W2+' '+H2+'" role="img" aria-label="Estimated max over time">'+s+'</svg>';
+  }
+
+  /* rest timer */
+  function beep(){
+    try{
+      if(!R.ctx) return;
+      var o=R.ctx.createOscillator(), g=R.ctx.createGain();
+      o.frequency.value=880; g.gain.value=0.08; o.connect(g); g.connect(R.ctx.destination);
+      o.start(); o.stop(R.ctx.currentTime+0.18);
+    }catch(e){}
+  }
+  function tickRest(){
+    var left=Math.ceil((R.end-Date.now())/1000);
+    if(left<=0){
+      clearInterval(R.timer); R.timer=null;
+      $('restTxt').textContent='Rest over. Next set.';
+      beep();
+      try{ if(navigator.vibrate) navigator.vibrate([200,100,200]); }catch(e){}
+      R.hideT=setTimeout(function(){ $('restBar').hidden=true; },6000);
+      return;
+    }
+    $('restTxt').textContent='Rest '+Math.floor(left/60)+':'+String(left%60).padStart(2,'0');
+  }
+  function startRest(sec){
+    clearInterval(R.timer); clearTimeout(R.hideT);
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(!R.ctx && AC) R.ctx=new AC();
+      if(R.ctx && R.ctx.state==='suspended') R.ctx.resume();
+    }catch(e){}
+    R.end=Date.now()+sec*1000; $('restBar').hidden=false; tickRest(); R.timer=setInterval(tickRest,250);
+  }
+  function stopRest(){ clearInterval(R.timer); clearTimeout(R.hideT); R.timer=null; $('restBar').hidden=true; }
+
+  function refreshDatalist(){
+    var names={}, out=[];
+    COMMON.concat(
+      state.routines.reduce(function(a,r){return a.concat(r.ex.map(function(e){return e.name;}));},[]),
+      state.sessions.reduce(function(a,s){return a.concat(s.items.map(function(i){return i.name;}));},[])
+    ).forEach(function(n){ var k=nk(n); if(k && !names[k]){ names[k]=1; out.push(n); } });
+    $('exlist').innerHTML=out.map(function(n){return '<option value="'+esc(n)+'">';}).join('');
+  }
+
+  function viewHome(){
+    var h='', u=state.unit;
+    if(state.active){
+      h+='<div class="card"><h2>Workout in progress</h2><p style="margin:0 0 12px">'+esc(state.active.name)+'</p>'+
+         '<div class="row2"><button class="btn" data-act="resume">Resume</button><button class="btn link" data-act="discard">Discard</button></div></div>';
+    }
+    if(!state.routines.length){
+      h+='<div class="card"><h2>Build your split</h2><p class="muted" style="margin:0 0 12px">Start from a template and change anything, or build your own routine from scratch.</p>'+
+         '<div class="chips" style="margin-bottom:12px"><button class="btn ghost sm" data-act="tpl" data-k="ppl">Push / pull / legs</button><button class="btn ghost sm" data-act="tpl" data-k="ul">Upper / lower</button><button class="btn ghost sm" data-act="tpl" data-k="fb">Full body</button></div>'+
+         '<button class="btn" data-act="newRoutine">Build my own</button></div>';
+    } else {
+      state.routines.forEach(function(r){
+        var last=null;
+        state.sessions.forEach(function(se){ if(se.routineId===r.id && (!last || dayNum(se.d)>=dayNum(last))) last=se.d; });
+        h+='<div class="card" data-r="'+r.id+'"><div class="row"><h2 style="margin:0">'+esc(r.name)+'</h2><button class="btn link" data-act="edit">Edit</button></div>'+
+           '<p class="muted small" style="margin:6px 0 12px">'+esc(r.ex.map(function(e){return e.name;}).join(', '))+'<br>'+(last?'Last done '+dayLabel(dayNum(last)):'Not done yet')+'</p>'+
+           '<button class="btn" data-act="start">Start workout</button></div>';
+      });
+      h+='<div class="row2" style="margin-bottom:14px"><button class="btn ghost sm" data-act="newRoutine">New routine</button><button class="btn ghost sm" data-act="quick">Quick workout</button></div>'+
+         '<details style="margin-bottom:14px"><summary class="muted small" style="cursor:pointer;min-height:32px">Add a template</summary><div class="chips" style="margin-top:8px"><button class="btn ghost sm" data-act="tpl" data-k="ppl">Push / pull / legs</button><button class="btn ghost sm" data-act="tpl" data-k="ul">Upper / lower</button><button class="btn ghost sm" data-act="tpl" data-k="fb">Full body</button></div></details>';
+    }
+    if(!state.routines.length){
+      h+='<p style="margin:0 0 14px"><button class="btn link" data-act="quick">Or start a quick workout with no routine</button></p>';
+    }
+    var arr=liftMap().sort(function(a,b){ return dayNum(b.pts[b.pts.length-1].d)-dayNum(a.pts[a.pts.length-1].d); }).slice(0,8);
+    if(arr.length){
+      h+='<div class="card"><h2>Lifts</h2><p class="muted small" style="margin:-4px 0 6px">Estimated one-rep max from your best working set each session. Tap a lift for its chart.</p>';
+      arr.forEach(function(l){
+        var first=l.pts[0], cur=l.pts[l.pts.length-1];
+        var delta = l.pts.length>1 ? (cur.e-first.e) : null;
+        h+='<div class="lift"><div><button class="btn link" data-lift="'+esc(l.key)+'" style="text-align:left;font-size:16px">'+esc(l.name)+'</button><div class="muted small">'+(delta==null?'First session logged':(delta>=0?'+':'−')+wfmt(Math.abs(delta))+' '+u+' since '+dayLabel(dayNum(first.d)))+'</div></div>'+
+           '<div class="row2" style="flex-wrap:nowrap;gap:12px">'+spark(l.pts.map(function(p){return p.e;}))+'<span class="num">'+wfmt(cur.e)+'<span class="unit" style="font-size:15px">'+u+'</span></span></div></div>';
+      });
+      h+='</div>';
+    }
+    if(state.sessions.length){
+      h+='<div class="card"><h2>Recent workouts</h2><ul class="hist">';
+      state.sessions.slice().reverse().slice(0,6).forEach(function(se){
+        var n=se.items.reduce(function(a,i){return a+i.sets.length;},0);
+        h+='<li data-sid="'+se.id+'"><span>'+esc(se.name)+'<br><span class="muted small">'+dayLabel(dayNum(se.d))+' · '+se.items.length+' exercises, '+n+' sets</span></span>'+
+           '<button class="x" data-act="delSession" aria-label="Delete workout">×</button></li>';
+      });
+      h+='</ul></div>';
+    }
+    return h;
+  }
+
+  function viewLift(){
+    var m=liftMap().filter(function(x){return x.key===W.lift;})[0];
+    if(!m) return viewHome();
+    var u=state.unit, vals=m.pts.map(function(p){return disp(p.e);});
+    var best=Math.max.apply(null,vals), cur=vals[vals.length-1];
+    var h='<div class="card"><div class="row"><h2 style="margin:0">'+esc(m.name)+'</h2><button class="btn link" data-act="back">Back</button></div>'+
+      '<div class="row" style="margin:12px 0"><div><div class="muted small">Latest estimated max</div><div class="num" style="font-size:36px;line-height:1">'+fmt(cur)+'<span class="unit">'+u+'</span></div></div>'+
+      '<div style="text-align:right"><div class="muted small">Best</div><div class="num" style="font-size:26px;line-height:1">'+fmt(best)+' '+u+'</div></div></div>'+
+      liftChart(m.pts)+'</div>';
+    var hist=history(m.name).slice().reverse().slice(0,8);
+    h+='<div class="card"><h2>Recent sessions</h2><ul class="hist">';
+    hist.forEach(function(x){
+      h+='<li><span>'+dayLabel(dayNum(x.d))+'</span><span class="small" style="text-align:right">'+x.sets.map(function(s){
+        return (s.wu?'<span class="muted">':'<span>')+wfmt(s.w||0)+'×'+s.r+(s.wu?' W':'')+'</span>';
+      }).join(', ')+'</span></li>';
+    });
+    return h+'</ul></div>';
+  }
+
+  function viewEdit(){
+    var d=W.draft, h='<div class="card"><h2>'+(W.editId?'Edit routine':'New routine')+'</h2>'+
+      '<div class="field"><label for="rName">Routine name</label><input type="text" id="rName" value="'+esc(d.name)+'" placeholder="Push day" autocomplete="off"></div>';
+    d.ex.forEach(function(e,i){
+      var bw = e.bw===undefined ? isBwName(e.name) : e.bw;
+      h+='<div class="exed" data-i="'+i+'"><div class="field"><label>Exercise</label><input type="text" list="exlist" data-f="name" value="'+esc(e.name)+'" placeholder="Bench press" autocomplete="off"></div>'+
+         '<div class="grid3 field"><div><label>Sets</label><input type="number" inputmode="numeric" data-f="sets" value="'+(e.sets==null?'':e.sets)+'"></div>'+
+         '<div><label>Min reps</label><input type="number" inputmode="numeric" data-f="min" value="'+(e.min==null?'':e.min)+'"></div>'+
+         '<div><label>Max reps</label><input type="number" inputmode="numeric" data-f="max" value="'+(e.max==null?'':e.max)+'"></div></div>'+
+         '<label class="chkrow" style="margin:0 0 10px"><input type="checkbox" data-f="bw"'+(bw?' checked':'')+'><span>Bodyweight exercise (the weight you log is extra weight)</span></label>'+
+         '<div class="row2" style="margin-bottom:8px"><button class="btn ghost sm" data-act="up" aria-label="Move up">↑</button><button class="btn ghost sm" data-act="down" aria-label="Move down">↓</button><button class="btn link" data-act="rmDraftEx">Remove</button></div></div>';
+    });
+    h+='<button class="btn ghost" data-act="addEx" style="margin-top:6px">Add exercise</button></div>'+
+       '<div class="row2" style="margin-bottom:14px"><button class="btn" data-act="saveRoutine">Save routine</button><button class="btn ghost" data-act="cancelEdit">Cancel</button>'+
+       (W.editId?'<button class="btn ghost danger" data-act="delRoutine">Delete</button>':'')+'</div>';
+    return h;
+  }
+
+  function viewActive(){
+    var a=state.active, u=state.unit, rest=state.rest==null?90:state.rest;
+    var h='<div class="card"><div class="row"><div><h2 style="margin:0">'+esc(a.name)+'</h2><div class="muted small">'+dayLabel(dayNum(a.date))+'</div></div><button class="btn link" data-act="discard">Cancel workout</button></div>'+
+      '<div class="row" style="margin-top:12px"><label for="restSel" style="margin:0">Rest timer</label><select id="restSel" style="max-width:130px">'+
+      [[0,'Off'],[60,'1:00'],[90,'1:30'],[120,'2:00'],[180,'3:00']].map(function(o){return '<option value="'+o[0]+'"'+(o[0]===rest?' selected':'')+'>'+o[1]+'</option>';}).join('')+
+      '</select></div><p class="muted small" style="margin:8px 0 0">Tap a set number to mark it as a warm-up. Warm-ups do not count toward your estimated max.</p></div>';
+    a.items.forEach(function(it,i){
+      var hist=history(it.name), last=hist.length?hist[hist.length-1]:null, sg=suggest(it.name,it.target,it.bw);
+      var done=it.sets.filter(function(s){return s.done && s.r>0;}), best=bestE(done,it.bw?state.s.weight:0);
+      var lastWork = last ? work(last.sets) : [];
+      h+='<div class="card" data-i="'+i+'"><div class="row"><h2 style="margin:0">'+esc(it.name)+'</h2><button class="btn link" data-act="rmEx">Remove</button></div>'+
+         '<div class="muted small" style="margin:4px 0 6px">Target '+it.target.sets+' × '+it.target.min+'–'+it.target.max+(lastWork.length?' · Last ('+dayLabel(dayNum(last.d))+'): '+lastWork.map(function(s){return wfmt(s.w||0)+'×'+s.r;}).join(', '):'')+'</div>'+
+         '<div class="cue">'+esc(sg.text)+'</div>'+
+         '<div class="setrow head"><span>Set</span><span>'+(it.bw?'Extra':'Weight')+' ('+u+')</span><span>Reps</span><span></span></div>';
+      it.sets.forEach(function(s,j){
+        var ph = last && last.sets[j] ? last.sets[j].r : '';
+        h+='<div class="setrow" data-s="'+j+'"><button class="setn" data-act="wu" aria-pressed="'+(s.wu?'true':'false')+'" aria-label="Set '+(j+1)+(s.wu?', warm-up':'')+'. Tap to toggle warm-up">'+(s.wu?'W':(j+1))+'</button>'+
+           '<input type="number" inputmode="decimal" step="any" data-f="w" aria-label="Set '+(j+1)+' weight" value="'+(s.w==null?'':wfmt(s.w))+'">'+
+           '<input type="number" inputmode="numeric" data-f="r" aria-label="Set '+(j+1)+' reps" placeholder="'+ph+'" value="'+(s.r==null?'':s.r)+'">'+
+           '<button class="chk" data-act="done" aria-pressed="'+(s.done?'true':'false')+'" aria-label="Mark set '+(j+1)+' done">✓</button></div>';
+      });
+      h+='<div class="row" style="margin-top:6px"><button class="btn link" data-act="addSet">Add set</button><span class="muted small">'+(best?'Est. max today '+wfmt(best)+' '+u:'')+'</span></div></div>';
+    });
+    h+='<div class="card"><label for="newEx">Add an exercise</label><div class="row2" style="flex-wrap:nowrap"><input type="text" list="exlist" id="newEx" placeholder="Exercise name" autocomplete="off"><button class="btn" data-act="addActiveEx">Add</button></div></div>'+
+       '<button class="btn" data-act="finish" style="width:100%;margin-bottom:14px">Finish workout</button>';
+    return h;
+  }
+
+  function renderWorkout(){
+    var y=window.scrollY;
+    refreshDatalist();
+    var html;
+    if(W.view==='active' && state.active) html=viewActive();
+    else if(W.view==='edit' && W.draft) html=viewEdit();
+    else if(W.view==='lift') html=viewLift();
+    else html=viewHome();
+    if(W.view==='active' && !state.active) W.view='home';
+    $('tab-workout').innerHTML=html;
+    window.scrollTo(0,y);
+  }
+  function go(view){ W.view=view; $('tab-workout').innerHTML=''; renderWorkout(); window.scrollTo(0,0); }
+
+  function startRoutine(r){
+    var items=r.ex.filter(function(e){return e.name.trim();}).map(function(e){ return mkItem(e.name.trim(),{sets:e.sets,min:e.min,max:e.max},e.bw); });
+    state.active={routineId:r.id,name:r.name,date:todayStr(),items:items};
+    save(); go('active');
+  }
+  function finishWorkout(){
+    var a=state.active, items=[], prs=[];
+    a.items.forEach(function(it){
+      var bwKg = it.bw ? state.s.weight : 0;
+      var sets=it.sets.filter(function(s){return s.done && s.r>0 && s.w!=null;}).map(function(s){return {w:s.w,r:s.r,wu:!!s.wu};});
+      if(!sets.length) return;
+      var prev=0; history(it.name).forEach(function(h){ prev=Math.max(prev,bestE(h.sets,h.bw)); });
+      if(prev>0 && bestE(sets,bwKg)>prev+0.01) prs.push(it.name);
+      items.push({name:it.name,bw:bwKg,sets:sets});
+    });
+    if(!items.length){ toast('Check off at least one set to save'); return; }
+    state.sessions.push({id:uid(),d:a.date,name:a.name,routineId:a.routineId,items:items});
+    state.active=null; stopRest(); save(); go('home');
+    toast(prs.length ? 'Saved. New estimated max: '+prs.join(', ') : 'Workout saved');
+  }
+  function saveRoutine(){
+    var d=W.draft, name=d.name.trim();
+    if(!name){ toast('Name your routine'); return; }
+    var ex=d.ex.filter(function(e){return e.name.trim();}).map(function(e){
+      var sets=Math.max(1,Math.min(10,e.sets||3)), mn=Math.max(1,e.min||8), mx=Math.max(mn,e.max||12);
+      return {name:e.name.trim(),sets:sets,min:mn,max:mx,bw:e.bw===undefined?isBwName(e.name):!!e.bw};
+    });
+    if(!ex.length){ toast('Add at least one exercise'); return; }
+    if(W.editId){
+      state.routines=state.routines.map(function(r){return r.id===W.editId?{id:r.id,name:name,ex:ex}:r;});
+    } else {
+      state.routines.push({id:uid(),name:name,ex:ex});
+    }
+    save(); W.draft=null; W.editId=null; go('home'); toast('Routine saved');
+  }
+
+  function wkAct(act,b){
+    var ie=b.closest('[data-i]'), i=ie?+ie.dataset.i:-1;
+    var se=b.closest('[data-s]'), s=se?+se.dataset.s:-1;
+    var re=b.closest('[data-r]'), rid=re?re.dataset.r:null;
+    var a=state.active, d=W.draft;
+    switch(act){
+      case 'back': go('home'); break;
+      case 'tpl':
+        TEMPLATES[b.dataset.k].forEach(function(t){
+          state.routines.push({id:uid(),name:t.name,ex:t.ex.map(function(e){return {name:e[0],sets:e[1],min:e[2],max:e[3]};})});
+        });
+        save(); renderWorkout(); toast('Template added. Tap Edit to change it.'); break;
+      case 'newRoutine':
+        W.editId=null; W.draft={name:'',ex:[{name:'',sets:3,min:8,max:12}]}; go('edit'); break;
+      case 'edit':
+        var r=state.routines.filter(function(x){return x.id===rid;})[0];
+        W.editId=r.id; W.draft=JSON.parse(JSON.stringify(r)); go('edit'); break;
+      case 'start':
+        if(state.active && !arm(b,'start','Replace current workout?')) return;
+        startRoutine(state.routines.filter(function(x){return x.id===rid;})[0]); break;
+      case 'quick':
+        if(state.active && !arm(b,'quick','Replace current workout?')) return;
+        state.active={routineId:null,name:'Quick workout',date:todayStr(),items:[]}; save(); go('active'); break;
+      case 'resume': go('active'); break;
+      case 'discard':
+        if(!arm(b,'discard','Tap again to discard')) return;
+        state.active=null; stopRest(); save(); go('home'); break;
+      case 'wu':
+        a.items[i].sets[s].wu=!a.items[i].sets[s].wu; save(); renderWorkout(); break;
+      case 'done':
+        var set=a.items[i].sets[s];
+        if(set.done){ set.done=false; }
+        else {
+          if(set.w==null){ toast('Enter a weight first'); return; }
+          if(!(set.r>0)){
+            var h=history(a.items[i].name), ls=h.length?h[h.length-1].sets[s]:null;
+            if(ls) set.r=ls.r; else { toast('Enter your reps first'); return; }
+          }
+          set.done=true;
+          var rs=state.rest==null?90:state.rest;
+          if(rs>0 && !set.wu) startRest(rs);
+        }
+        save(); renderWorkout(); break;
+      case 'addSet':
+        var sets=a.items[i].sets, prev=sets[sets.length-1];
+        sets.push({w:prev?prev.w:null,r:null,done:false,wu:false}); save(); renderWorkout(); break;
+      case 'rmEx':
+        if(!arm(b,'rmEx'+i,'Remove?')) return;
+        a.items.splice(i,1); save(); renderWorkout(); break;
+      case 'addActiveEx':
+        var nm=$('newEx').value.trim();
+        if(!nm){ toast('Type an exercise name'); return; }
+        a.items.push(mkItem(nm,{sets:3,min:8,max:12})); save(); renderWorkout(); break;
+      case 'finish': finishWorkout(); break;
+      case 'addEx': d.ex.push({name:'',sets:3,min:8,max:12}); renderWorkout(); break;
+      case 'up': if(i>0){ var t1=d.ex[i]; d.ex[i]=d.ex[i-1]; d.ex[i-1]=t1; renderWorkout(); } break;
+      case 'down': if(i<d.ex.length-1){ var t2=d.ex[i]; d.ex[i]=d.ex[i+1]; d.ex[i+1]=t2; renderWorkout(); } break;
+      case 'rmDraftEx': d.ex.splice(i,1); if(!d.ex.length) d.ex.push({name:'',sets:3,min:8,max:12}); renderWorkout(); break;
+      case 'saveRoutine': saveRoutine(); break;
+      case 'cancelEdit': W.draft=null; W.editId=null; go('home'); break;
+      case 'delRoutine':
+        if(!arm(b,'delRoutine','Tap again to delete')) return;
+        state.routines=state.routines.filter(function(x){return x.id!==W.editId;});
+        save(); W.draft=null; W.editId=null; go('home'); break;
+      case 'delSession':
+        var sid=b.closest('[data-sid]').dataset.sid;
+        if(!arm(b,'ds'+sid,'Sure?')) return;
+        state.sessions=state.sessions.filter(function(x){return x.id!==sid;}); save(); renderWorkout(); renderTrend(); break;
+    }
+  }
+  (function bindWorkout(){
+    var el=$('tab-workout');
+    el.addEventListener('click',function(e){
+      var lf=e.target.closest('[data-lift]');
+      if(lf){ W.lift=lf.dataset.lift; go('lift'); return; }
+      var b=e.target.closest('[data-act]'); if(b) wkAct(b.dataset.act,b);
+    });
+    el.addEventListener('input',function(e){
+      var t=e.target;
+      if(t.id==='restSel'){ state.rest=parseInt(t.value,10)||0; save(); if(!state.rest) stopRest(); return; }
+      if(t.id==='rName' && W.draft){ W.draft.name=t.value; return; }
+      var f=t.dataset.f; if(!f) return;
+      var ie=t.closest('[data-i]'); if(!ie) return;
+      var i=+ie.dataset.i;
+      if(W.view==='edit' && W.draft){
+        var ex=W.draft.ex[i];
+        if(f==='name'){
+          ex.name=t.value;
+          if(ex.bw===undefined && isBwName(t.value)){ var cb=ie.querySelector('[data-f="bw"]'); if(cb) cb.checked=true; }
+        } else if(f==='bw'){ ex.bw=t.checked; }
+        else { var n=parseInt(t.value,10); ex[f]=isNaN(n)?null:n; }
+      } else if(W.view==='active' && state.active){
+        var se=t.closest('[data-s]'); if(!se) return;
+        var set=state.active.items[i].sets[+se.dataset.s], v=parseFloat(t.value);
+        if(f==='w') set.w=isNaN(v)?null:undisp(v);
+        else if(f==='r') set.r=isNaN(v)?null:Math.round(v);
+        save();
+      }
+    });
+  })();
+
+  /* ---------- food log helpers ---------- */
+  function dayKey(n){ return new Date(n*86400000).toISOString().slice(0,10); }
+  function sumLog(d){
+    var t={kcal:0,p:0,c:0,f:0,n:0};
+    state.log.forEach(function(x){ if(x.d===d){ t.kcal+=x.kcal; t.p+=x.p; t.c+=x.c; t.f+=x.f; t.n++; } });
+    return t.n ? t : null;
+  }
+  // intake counts only for days marked complete (food log) or a calorie total typed with the weigh-in
+  function dayIntake(d){
+    var t=sumLog(d);
+    if(t && state.complete[d]) return {kcal:t.kcal,p:t.p,c:t.c,f:t.f,src:'log'};
+    var e=state.entries.filter(function(x){return x.d===d;})[0];
+    if(e && e.c>0) return {kcal:e.c,src:'manual'};
+    return null;
+  }
+  function kcalOf(e){ var i=dayIntake(e.d); return i ? i.kcal : 0; }
+
+  /* ---------- personal calibration ---------- */
+  function inv(M){
+    var n=M.length, A=M.map(function(r,i){ var z=[]; for(var j=0;j<n;j++) z.push(i===j?1:0); return r.concat(z); });
+    for(var i=0;i<n;i++){
+      var p=i; for(var r=i+1;r<n;r++) if(Math.abs(A[r][i])>Math.abs(A[p][i])) p=r;
+      var tmp=A[i]; A[i]=A[p]; A[p]=tmp;
+      var d=A[i][i]; if(Math.abs(d)<1e-12) return null;
+      for(var j=0;j<2*n;j++) A[i][j]/=d;
+      for(var r2=0;r2<n;r2++){ if(r2!==i){ var f=A[r2][i]; if(f){ for(var j2=0;j2<2*n;j2++) A[r2][j2]-=f*A[i][j2]; } } }
+    }
+    return A.map(function(r){return r.slice(n);});
+  }
+  function chol(M){
+    var n=M.length, L=M.map(function(){return new Array(n).fill(0);});
+    for(var i=0;i<n;i++) for(var j=0;j<=i;j++){
+      var s=M[i][j]; for(var k=0;k<j;k++) s-=L[i][k]*L[j][k];
+      if(i===j){ if(s<=0) return null; L[i][i]=Math.sqrt(s); } else L[i][j]=s/L[j][j];
+    }
+    return L;
+  }
+  function regStats(list){
+    var n=list.length, x0=dayNum(list[0].d), sx=0, sy=0;
+    list.forEach(function(e){ sx+=dayNum(e.d)-x0; sy+=e.w; });
+    var mx=sx/n, my=sy/n, sxx=0, sxy=0;
+    list.forEach(function(e){ var x=dayNum(e.d)-x0-mx; sxx+=x*x; sxy+=x*(e.w-my); });
+    if(sxx<=0) return null;
+    var b=sxy/sxx, sse=0;
+    list.forEach(function(e){ var x=dayNum(e.d)-x0-mx, r=e.w-my-b*x; sse+=r*r; });
+    var se=n>2 ? Math.sqrt(sse/(n-2)/sxx) : null;
+    return {slope:b, se:se, meanW:my, n:n};
+  }
+  // Bayesian regression: energy stored per day = sum(a_macro * grams) - maintenance. Priors: Atwater 4/4/9,
+  // maintenance from the equation. Absorption varies only a few percent between people, so the priors are tight
+  // on the factors and loose on maintenance; data can move the factors only as far as it supports.
+  function calibrate(){
+    var out={ready:false, windows:0, days:0};
+    var md={};
+    Object.keys(state.complete).forEach(function(d){
+      if(state.complete[d]){ var t=sumLog(d); if(t && t.kcal>0) md[d]=t; }
+    });
+    out.days=Object.keys(md).length;
+    var es=sorted(); if(es.length<10) return out;
+    var d0=dayNum(es[0].d), dN=dayNum(es[es.length-1].d), rows=[];
+    for(var s0=d0; s0+13<=dN; s0+=7){
+      var win=es.filter(function(e){var x=dayNum(e.d); return x>=s0 && x<=s0+13;});
+      if(win.length<6) continue;
+      var P=0,C=0,F=0,n=0;
+      for(var x=s0;x<=s0+13;x++){ var m=md[dayKey(x)]; if(m){ P+=m.p; C+=m.c; F+=m.f; n++; } }
+      if(n<8) continue;
+      var rs=regStats(win); if(!rs || rs.se==null) continue;
+      var pct=rs.slope*7/rs.meanW*100, ed=edFor(pct);
+      var sd=Math.sqrt(Math.pow(rs.se*ed,2)+150*150)*1.4;
+      rows.push({z:[P/n,C/n,F/n,-1], y:rs.slope*ed, w:1/(sd*sd)});
+    }
+    out.windows=rows.length;
+    if(rows.length<4 || out.days<20) return out;
+    var s=state.s, E0=(10*s.weight+6.25*s.height-5*s.age+(s.sex==='m'?5:-161))*s.activity;
+    var th0=[4,4,9,E0], sdp=[0.25,0.25,0.55,400];
+    var A=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]], b=[0,0,0,0], i, j;
+    for(i=0;i<4;i++){ A[i][i]=1/(sdp[i]*sdp[i]); b[i]=th0[i]*A[i][i]; }
+    rows.forEach(function(r){
+      for(var i2=0;i2<4;i2++){ for(var j3=0;j3<4;j3++) A[i2][j3]+=r.w*r.z[i2]*r.z[j3]; b[i2]+=r.w*r.z[i2]*r.y; }
+    });
+    var cov=inv(A); if(!cov) return out;
+    var th=[0,0,0,0]; for(i=0;i<4;i++) for(j=0;j<4;j++) th[i]+=cov[i][j]*b[j];
+    var xm=[0,0,0]; rows.forEach(function(r){ for(var k=0;k<3;k++) xm[k]+=r.z[k]/rows.length; });
+    var std=4*xm[0]+4*xm[1]+9*xm[2];
+    var L=chol(cov), kap=[];
+    if(L){
+      var seed=12345; var rnd=function(){ seed|=0; seed=(seed+0x6D2B79F5)|0; var t=Math.imul(seed^(seed>>>15),1|seed); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; };
+      var gauss=function(){ var u=1-rnd(), v=rnd(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); };
+      for(var q=0;q<600;q++){
+        var g=[gauss(),gauss(),gauss(),gauss()], smp=[0,0,0,0];
+        for(i=0;i<4;i++){ smp[i]=th[i]; for(j=0;j<=i;j++) smp[i]+=L[i][j]*g[j]; }
+        kap.push((smp[0]*xm[0]+smp[1]*xm[1]+smp[2]*xm[2])/std);
+      }
+      kap.sort(function(a,b2){return a-b2;});
+    }
+    out.ready=true;
+    out.a=th.slice(0,3); out.sd=[Math.sqrt(cov[0][0]),Math.sqrt(cov[1][1]),Math.sqrt(cov[2][2])];
+    out.E=th[3]; out.Esd=Math.sqrt(cov[3][3]);
+    out.kappa=(th[0]*xm[0]+th[1]*xm[1]+th[2]*xm[2])/std;
+    out.lo=kap.length?kap[Math.floor(kap.length*0.05)]:out.kappa;
+    out.hi=kap.length?kap[Math.floor(kap.length*0.95)]:out.kappa;
+    return out;
+  }
+  function renderCal(){
+    var c=calibrate(), t=$('calText'), ul=$('calList');
+    ul.hidden=true;
+    if(!c.ready){
+      t.textContent='This learns how many calories you actually get from protein, carbs and fat, starting from the standard 4, 4 and 9 per gram. It needs at least 20 complete food days across about five weeks of weigh-ins. Progress: ' + Math.min(c.days,20) + ' of 20 complete days, ' + Math.min(c.windows,4) + ' of 4 two-week windows.';
+      return;
+    }
+    var clear = c.lo>1 || c.hi<1;
+    var pctTxt = fmt(Math.abs(c.kappa-1)*100,1);
+    t.textContent = clear
+      ? 'Your data points to getting about ' + pctTxt + '% ' + (c.kappa>1?'more':'fewer') + ' usable calories than the labels suggest (90% range ' + fmt(c.lo*100,0) + ' to ' + fmt(c.hi*100,0) + '%).'
+      : 'Your results are consistent with the standard values: usable calories come out at ' + fmt(c.kappa*100,1) + '% of label calories (90% range ' + fmt(c.lo*100,0) + ' to ' + fmt(c.hi*100,0) + '%). That is the normal outcome, since absorption differs only a few percent between people.';
+    var names=['Protein','Carbs','Fat'], std=[4,4,9], h='';
+    for(var i=0;i<3;i++){
+      h+='<li><span class="tag ok">'+names[i]+'</span><span><span class="cal-n">'+fmt(c.a[i],2)+'</span> kcal per gram <span class="muted small">(standard '+std[i]+', ± '+fmt(c.sd[i],2)+')</span></span></li>';
+    }
+    h+='<li><span class="tag ok">Burn</span><span><span class="cal-n">'+Math.round(c.E)+'</span> kcal a day <span class="muted small">(± '+Math.round(c.Esd)+')</span></span></li>';
+    h+='<li><span class="tag flag">Note</span><span class="small">Weight change cannot tell absorption apart from how much you burn, so these shifts are deliberately small and pulled toward the standard values. Treat them as a sanity check, not a measurement.</span></li>';
+    ul.innerHTML=h; ul.hidden=false;
+  }
+
+  /* ---------- food tab ---------- */
+  var fEditId=null, fSample=null, scanStream=null, scanTimer=null, scanDet=null, scanBusy=false;
+  function fDay(){ return $('fDate').value || todayStr(); }
+  function val(id){ var v=parseFloat($(id).value); return isNaN(v)?null:v; }
+  function rnd1(v){ return Math.round(v*10)/10; }
+
+  function renderFood(){
+    var d=fDay(), t=sumLog(d)||{kcal:0,p:0,c:0,f:0}, r=calc();
+    var cal=calibrate(), eff = (cal.ready && Math.abs(cal.kappa-1)>0.01) ? Math.round(t.kcal*cal.kappa) : null;
+    function row(label,v,target,unit,color){
+      var pct=target>0?Math.min(100,v/target*100):0;
+      return '<div class="row small"><span>'+label+'</span><span><b class="num" style="font-size:20px">'+Math.round(v)+'</b> / '+Math.round(target)+' '+unit+'</span></div><div class="pbar"><span style="width:'+pct+'%;background:'+color+'"></span></div>';
+    }
+    $('fTotals').innerHTML = row('Calories',t.kcal,r.kcal,'kcal','var(--ink)')+row('Protein',t.p,r.p,'g','var(--protein)')+row('Carbs',t.c,r.c,'g','var(--carb)')+row('Fat',t.f,r.f,'g','var(--fat)') +
+      (eff!==null ? '<p class="muted small" style="margin:-4px 0 0">Usable calories at your calibration: about '+eff+' kcal.</p>' : '');
+    $('fComplete').checked=!!state.complete[d];
+    renderRecent();
+    var items=state.log.filter(function(x){return x.d===d;});
+    $('dayCard').hidden=!items.length;
+    $('dayList').innerHTML = items.map(function(x){
+      return '<li data-id="'+x.id+'"><span>'+esc(x.name)+'<br><span class="muted small">'+rnd1(x.q)+' × '+esc(x.unit)+' · '+Math.round(x.kcal)+' kcal · P'+Math.round(x.p)+' C'+Math.round(x.c)+' F'+Math.round(x.f)+'</span></span><span class="row2" style="flex-wrap:nowrap;gap:0"><button class="btn link" data-fa="editLog">Edit</button><button class="x" data-fa="delLog" aria-label="Delete '+esc(x.name)+'">×</button></span></li>';
+    }).join('');
+    if(!$('libCard').hidden) renderLib();
+  }
+  function renderLib(){
+    var q=nk($('libQ').value), list=state.foods.filter(function(f){return !q || nk(f.name).indexOf(q)>=0;});
+    $('libList').innerHTML = list.length ? list.map(function(f){
+      return '<li data-id="'+f.id+'"><span>'+esc(f.name)+'<br><span class="muted small">'+esc(f.unit)+' · '+Math.round(f.kcal)+' kcal · P'+Math.round(f.p)+' C'+Math.round(f.c)+' F'+Math.round(f.f)+(f.barcode?' · barcode saved':'')+'</span></span>'+
+        '<span class="row2" style="flex-wrap:nowrap;gap:2px"><button class="btn ghost sm" data-fa="useFood">Add</button><button class="x" data-fa="delFood" aria-label="Delete '+esc(f.name)+' from my foods">×</button></span></li>';
+    }).join('') : '<li class="muted">'+(state.foods.length?'Nothing matches that search.':'No saved foods yet. Tick "Save to my foods" when you add one.')+'</li>';
+  }
+  function setField(id,v){ $(id).value = (v==null||v==='') ? '' : v; }
+  function openForm(o){
+    o=o||{};
+    fEditId=o.editId||null; $('ffAdd').textContent=fEditId?'Save changes':'Add to day';
+    $('foodForm').hidden=false; $('libCard').hidden=true;
+    $('ffTitle').textContent = o.title || 'Add food';
+    setField('ffName',o.name); setField('ffUnit',o.unit); setField('ffQ',o.q!=null?o.q:1);
+    setField('ffK',o.kcal!=null?rnd1(o.kcal):''); setField('ffP',o.p!=null?rnd1(o.p):''); setField('ffC',o.c!=null?rnd1(o.c):''); setField('ffF',o.f!=null?rnd1(o.f):'');
+    setField('ffBar',o.barcode); $('ffSave').checked=!!o.save; $('ffMsg').textContent=o.msg||'';
+    updatePrev();
+    $('foodForm').scrollIntoView({block:'start',behavior:'smooth'});
+  }
+  function closeForm(){ $('foodForm').hidden=true; fEditId=null; $('ffAdd').textContent='Add to day'; }
+  function formValues(){
+    var q=val('ffQ'), k=val('ffK'), p=val('ffP'), c=val('ffC'), f=val('ffF');
+    if(k==null && (p!=null||c!=null||f!=null)) k=4*(p||0)+4*(c||0)+9*(f||0);
+    return {q:q,k:k,p:p||0,c:c||0,f:f||0};
+  }
+  function updatePrev(){
+    var v=formValues();
+    $('ffPrev').textContent = (v.q>0 && v.k!=null) ? 'This adds ' + Math.round(v.k*v.q) + ' kcal · ' + Math.round(v.p*v.q) + ' g protein · ' + Math.round(v.c*v.q) + ' g carbs · ' + Math.round(v.f*v.q) + ' g fat.' : '';
+  }
+  function addFood(){
+    var v=formValues();
+    if(!(v.q>0)){ toast('Enter how many servings you ate'); return; }
+    if(v.k==null){ toast('Enter calories or at least one macro'); return; }
+    var name=$('ffName').value.trim()||'Food', unit=$('ffUnit').value.trim()||'serving', bar=$('ffBar').value.replace(/\D/g,'');
+    if($('ffSave').checked){
+      state.foods=state.foods.filter(function(x){ return !(bar && x.barcode===bar) && nk(x.name)!==nk(name); });
+      state.foods.push({id:uid(),name:name,barcode:bar||null,unit:unit,kcal:v.k,p:v.p,c:v.c,f:v.f});
+    }
+    var entry={id:fEditId||uid(),d:fDay(),name:name,q:v.q,unit:unit,kcal:v.k*v.q,p:v.p*v.q,c:v.c*v.q,f:v.f*v.q};
+    var wasEdit=!!fEditId;
+    if(fEditId){
+      var ix=state.log.findIndex(function(x){return x.id===fEditId;});
+      if(ix>=0){ entry.d=state.log[ix].d; state.log[ix]=entry; } else state.log.push(entry);
+    } else state.log.push(entry);
+    save(); closeForm(); renderFood(); renderTrend(); updateResults(); toast(wasEdit?'Saved':'Added');
+  }
+
+  /* ---------- barcode scanning ---------- */
+  var BC_FORMATS=['ean_13','ean_8','upc_a','upc_e'];
+  function scanMsg(t){ $('scanMsg').textContent=t; }
+  function stopCamera(){
+    clearInterval(scanTimer); scanTimer=null;
+    if(scanStream){ scanStream.getTracks().forEach(function(t){t.stop();}); scanStream=null; }
+    var v=$('scanVid'); v.srcObject=null; v.hidden=true;
+  }
+  function closeScanner(){ stopCamera(); $('scan').hidden=true; }
+  async function openScanner(){
+    $('scan').hidden=false; $('scanCode').value='';
+    var v=$('scanVid');
+    if(!('BarcodeDetector' in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      scanMsg('Live scanning is not supported in this browser. Take a photo of the barcode, or type the number below.'); return;
+    }
+    try{
+      scanDet=new BarcodeDetector({formats:BC_FORMATS});
+      scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+      v.srcObject=scanStream; v.hidden=false; await v.play();
+      scanMsg('Point the camera at the barcode and hold steady.');
+      scanTimer=setInterval(scanTick,250);
+    }catch(e){
+      stopCamera();
+      scanMsg('The camera is not available here (it may be blocked or declined). Take a photo of the barcode, or type the number below.');
+    }
+  }
+  async function scanTick(){
+    var v=$('scanVid'); if(scanBusy || !scanDet || v.readyState<2) return;
+    scanBusy=true;
+    try{
+      var r=await scanDet.detect(v);
+      if(r.length){ var code=r[0].rawValue; closeScanner(); onBarcode(code); }
+    }catch(e){}
+    scanBusy=false;
+  }
+  async function decodePhoto(file){
+    try{
+      if('BarcodeDetector' in window){
+        var bmp=await createImageBitmap(file), r=await new BarcodeDetector({formats:BC_FORMATS}).detect(bmp);
+        if(r.length) return r[0].rawValue;
+      }
+    }catch(e){}
+    try{
+      if(window.ZXing){
+        var url=URL.createObjectURL(file), res=await new ZXing.BrowserMultiFormatReader().decodeFromImageUrl(url);
+        URL.revokeObjectURL(url); return res.getText();
+      }
+    }catch(e){}
+    return null;
+  }
+  async function lookupOFF(code){
+    // Works when this file is hosted on your own site; the published preview blocks outside requests.
+    try{
+      var ctl=new AbortController(), tm=setTimeout(function(){ctl.abort();},6000);
+      var r=await fetch('https://world.openfoodfacts.org/api/v2/product/'+code+'.json?fields=product_name,brands,serving_quantity,nutriments',{signal:ctl.signal});
+      clearTimeout(tm);
+      if(!r.ok) return null;
+      var j=await r.json(); if(j.status!==1 || !j.product) return null;
+      var n=j.product.nutriments||{}, sq=parseFloat(j.product.serving_quantity);
+      var kc=n['energy-kcal_100g']; if(kc==null && n['energy_100g']!=null) kc=n['energy_100g']/4.184;
+      if(kc==null) return null;
+      var name=(j.product.product_name||'Food')+(j.product.brands?' ('+String(j.product.brands).split(',')[0].trim()+')':'');
+      var k=sq>0 ? sq/100 : 1;
+      return {name:name, unit: sq>0 ? 'serving ('+Math.round(sq)+' g)' : '100 g',
+        kcal:kc*k, p:(n['proteins_100g']||0)*k, c:(n['carbohydrates_100g']||0)*k, f:(n['fat_100g']||0)*k};
+    }catch(e){ return null; }
+  }
+  async function onBarcode(raw){
+    var code=String(raw).replace(/\D/g,'');
+    if(code.length<6){ toast('That does not look like a barcode'); return; }
+    showTab('food');
+    var key=code.replace(/^0+/,'');
+    var hit=state.foods.filter(function(f){return f.barcode && f.barcode.replace(/^0+/,'')===key;})[0];
+    if(hit){ openForm({title:'Add '+hit.name,name:hit.name,barcode:hit.barcode,unit:hit.unit,kcal:hit.kcal,p:hit.p,c:hit.c,f:hit.f,q:1}); toast('Found in your foods'); return; }
+    toast('Looking it up…');
+    var off=await lookupOFF(code);
+    if(off){ openForm(Object.assign({title:'Check and add',barcode:code,q:1,save:true,msg:'Pulled from Open Food Facts. Check it against the package.'},off)); return; }
+    openForm({title:'New barcode',barcode:code,q:1,save:true,
+      msg:'This page cannot reach a food database, so enter the label once. Next time this barcode fills in instantly.'+(fSample?' You can also photograph the nutrition label and let Claude read it.':'')});
+  }
+  async function readLabel(file){
+    if(!fSample || !file) return;
+    $('ffMsg').textContent='Reading the label…';
+    try{
+      var d=await fSample.json('This is a photo of a food nutrition label. Reply with only a JSON object: {"name": string (product name if visible, else "Food"), "unit": string (the serving size exactly as printed, e.g. "1 cup (240 g)"), "kcal": number, "p": number (protein in grams), "c": number (total carbohydrate in grams), "f": number (total fat in grams)}. Values are for ONE serving as printed. Use 0 for a value that is not listed. If this is not a nutrition label, reply {"error":"not a label"}.',{images:file,modelTier:'quick'});
+      if(!d || d.error || typeof d.kcal!=='number'){ $('ffMsg').textContent='That did not look like a nutrition label. Try a clearer, flatter photo.'; return; }
+      if(!$('ffName').value.trim() || $('ffName').value==='Food') setField('ffName',d.name);
+      setField('ffUnit',d.unit); setField('ffK',rnd1(d.kcal)); setField('ffP',rnd1(d.p||0)); setField('ffC',rnd1(d.c||0)); setField('ffF',rnd1(d.f||0));
+      $('ffMsg').textContent='Read from the photo. Check the numbers against the label before adding.';
+      updatePrev();
+    }catch(e){
+      var c=e&&e.code;
+      $('ffMsg').textContent = c==='not_granted' ? 'Label reading needs your permission to use Claude on this page.' : (c==='rate_limited' ? 'Too many requests right now. Try again in a bit.' : 'Could not read that photo. Enter the numbers by hand.');
+      if(c==='not_granted'||c==='sampling_disabled') $('labelWrap').hidden=true;
+    }
+  }
+  function initSample(){
+    try{
+      if(!window.claude || !window.claude.use) return;
+      window.claude.use('sample').then(function(s){
+        if(!s) return;
+        return s.limits().then(function(l){ if(l && l.images){ fSample=s; $('labelWrap').hidden=false; } });
+      }).catch(function(){});
+    }catch(e){}
+  }
+  (function bindFood(){
+    $('fDate').value=todayStr(); $('fDate').max=todayStr();
+    $('fDate').addEventListener('change',function(){ if(!this.value) this.value=todayStr(); renderFood(); });
+    $('fComplete').addEventListener('change',function(){
+      var d=fDay(); if(this.checked) state.complete[d]=true; else delete state.complete[d];
+      save(); renderFood(); renderTrend(); updateResults();
+    });
+    $('scanBtn').onclick=openScanner;
+    $('scanClose').onclick=closeScanner;
+    $('scanUse').onclick=function(){ var c=$('scanCode').value; closeScanner(); onBarcode(c); };
+    $('scanCode').addEventListener('keydown',function(e){ if(e.key==='Enter') $('scanUse').click(); });
+    $('scanFile').addEventListener('change',async function(){
+      var f=this.files&&this.files[0]; this.value=''; if(!f) return;
+      scanMsg('Reading the photo…');
+      var code=await decodePhoto(f);
+      if(code){ closeScanner(); onBarcode(code); }
+      else scanMsg('Could not read a barcode from that photo. Try a closer, sharper shot, or type the number below.');
+    });
+    $('manBtn').onclick=function(){ openForm({title:'Add food'}); };
+    $('copyBtn').onclick=function(){ copyPrevDay(this); };
+    $('libBtn').onclick=function(){ $('libCard').hidden=false; $('foodForm').hidden=true; $('libQ').value=''; renderLib(); $('libCard').scrollIntoView({block:'start',behavior:'smooth'}); };
+    $('libClose').onclick=function(){ $('libCard').hidden=true; };
+    $('libQ').addEventListener('input',renderLib);
+    $('ffAdd').onclick=addFood; $('ffCancel').onclick=closeForm;
+    ['ffQ','ffK','ffP','ffC','ffF'].forEach(function(id){ $(id).addEventListener('input',updatePrev); });
+    $('labelFile').addEventListener('change',function(){ var f=this.files&&this.files[0]; this.value=''; readLabel(f); });
+    $('tab-food').addEventListener('click',function(e){
+      var b=e.target.closest('[data-fa]'); if(!b) return;
+      var li=b.closest('[data-id]'), id=li&&li.dataset.id, a=b.dataset.fa;
+      if(a==='delLog'){
+        state.log=state.log.filter(function(x){return x.id!==id;});
+        save(); renderFood(); renderTrend(); updateResults();
+      } else if(a==='delFood'){
+        if(!arm(b,'df'+id,'Sure?')) return;
+        state.foods=state.foods.filter(function(x){return x.id!==id;}); save(); renderLib();
+      } else if(a==='editLog'){
+        var x=state.log.filter(function(z){return z.id===id;})[0];
+        if(x){ var q=x.q>0?x.q:1; openForm({editId:id,title:'Edit '+x.name,name:x.name,unit:x.unit,kcal:x.kcal/q,p:x.p/q,c:x.c/q,f:x.f/q,q:q}); }
+      } else if(a==='useRecent'){
+        var y=state.log.filter(function(z){return z.id===id;})[0];
+        if(y){ var q2=y.q>0?y.q:1; openForm({title:'Add '+y.name,name:y.name,unit:y.unit,kcal:y.kcal/q2,p:y.p/q2,c:y.c/q2,f:y.f/q2,q:1}); }
+      } else if(a==='useFood'){
+        var f=state.foods.filter(function(x){return x.id===id;})[0];
+        if(f) openForm({title:'Add '+f.name,name:f.name,barcode:f.barcode,unit:f.unit,kcal:f.kcal,p:f.p,c:f.c,f:f.f,q:1});
+      }
+    });
+    initSample();
+  })();
+
+  /* ---------- body measurements ---------- */
+  var MEAS=[['waist','Waist'],['chest','Chest'],['arm','Arm'],['thigh','Thigh']];
+  function mDisp(cm){ return state.unit==='kg' ? cm : cm/2.54; }
+  function mUn(v){ return state.unit==='kg' ? v : v*2.54; }
+  function mUnit(){ return state.unit==='kg' ? 'cm' : 'in'; }
+  function maAtDay(n){
+    var es=sorted(); if(!es.length) return null;
+    var ma=movingAvg(es), v=null;
+    for(var i=0;i<es.length;i++){ if(dayNum(es[i].d)<=n) v=ma[i]; }
+    return v!=null ? v : ma[0];
+  }
+  function bodyVerdict(){
+    var ms=state.measures.filter(function(m){return m.waist>0;}).sort(function(a,b){return dayNum(a.d)-dayNum(b.d);});
+    if(ms.length<2) return null;
+    var b=ms[ms.length-1], bn=dayNum(b.d), a=null;
+    for(var i=0;i<ms.length-1;i++){ if(bn-dayNum(ms[i].d)<=84){ a=ms[i]; break; } }
+    if(!a || bn-dayNum(a.d)<14) return null;
+    var wp=(b.waist-a.waist)/a.waist*100, w1=maAtDay(dayNum(a.d)), w2=maAtDay(bn);
+    var gp=(w1&&w2) ? (w2-w1)/w1*100 : null;
+    var wTxt=(wp>=0?'+':'−')+fmt(Math.abs(wp),1)+'%', gTxt=gp==null?'':(gp>=0?'+':'−')+fmt(Math.abs(gp),1)+'%';
+    var g=goalOf();
+    if(g==='bulk'){
+      if(gp==null) return {level:'info',text:'Waist is '+wTxt+' since '+dayLabel(dayNum(a.d))+'.'};
+      var gg=Math.max(gp,0);
+      if(wp>gg+0.5) return {level:'flag',text:'Waist is '+wTxt+' while bodyweight is '+gTxt+', so more of your gain is likely fat. Consider trimming the surplus by about 100 kcal.'};
+      if(gg>0.3 && wp<=gg*0.5+0.3) return {level:'ok',text:'Waist '+wTxt+' against bodyweight '+gTxt+': the gain looks mostly lean.'};
+      return {level:'info',text:'Waist '+wTxt+' against bodyweight '+gTxt+': roughly in proportion. Keep watching it.'};
+    }
+    if(g==='cut'){
+      if(wp<-0.5) return {level:'ok',text:'Waist is '+wTxt+' while bodyweight is '+gTxt+': fat loss is showing up where you want it.'};
+      return {level:'info',text:'Waist is '+wTxt+' while bodyweight is '+gTxt+'. Measure the same way each time; early scale loss can be water.'};
+    }
+    return {level:'info',text:'Waist is '+wTxt+' and bodyweight is '+(gTxt||'unchanged')+' since '+dayLabel(dayNum(a.d))+'.'};
+  }
+  function renderBody(){
+    $('mDate').max=todayStr(); if(!$('mDate').value) $('mDate').value=todayStr();
+    document.querySelectorAll('.mu').forEach(function(n){n.textContent=mUnit();});
+    var out=$('mOut'), ms=state.measures.slice().sort(function(a,b){return dayNum(a.d)-dayNum(b.d);});
+    if(!ms.length){
+      out.innerHTML='<p class="muted small" style="margin:0">Measure about once a week at the same time and place: waist at the navel, relaxed; chest at the nipple line; arm flexed at its widest point; thigh at mid-length. Scale weight cannot tell muscle from fat, but measurements can show where the change is happening.</p>';
+      return;
+    }
+    var h='<ul class="checks">';
+    MEAS.forEach(function(m){
+      var pts=ms.filter(function(x){return x[m[0]]>0;}); if(!pts.length) return;
+      var f=pts[0], l=pts[pts.length-1], dl=l[m[0]]-f[m[0]];
+      h+='<li><span class="tag info">'+m[1]+'</span><span><span class="cal-n">'+fmt(mDisp(l[m[0]]),1)+'</span> '+mUnit()+' '+
+        (pts.length>1 ? '<span class="muted small">('+(dl>=0?'+':'−')+fmt(mDisp(Math.abs(dl)),1)+' since '+dayLabel(dayNum(f.d))+')</span>' : '<span class="muted small">(first reading)</span>')+'</span></li>';
+    });
+    var bv=bodyVerdict();
+    if(bv) h+='<li><span class="tag '+(bv.level==='flag'?'flag':(bv.level==='ok'?'ok':'info'))+'">'+(bv.level==='flag'?'Check':(bv.level==='ok'?'OK':'Note'))+'</span><span>'+esc(bv.text)+'</span></li>';
+    else h+='<li><span class="tag info">Note</span><span class="small">Two waist readings at least two weeks apart unlock the lean-or-fat check.</span></li>';
+    out.innerHTML=h+'</ul>';
+  }
+  function logBody(){
+    var d=$('mDate').value; if(!d){ toast('Pick a date first'); return; }
+    var vals={}, any=false, bad=false;
+    [['waist','mWaist'],['chest','mChest'],['arm','mArm'],['thigh','mThigh']].forEach(function(p){
+      var v=parseFloat($(p[1]).value);
+      if(!isNaN(v)){ var cm=mUn(v); if(cm<10||cm>250){ bad=true; return; } vals[p[0]]=Math.round(cm*10)/10; any=true; }
+    });
+    if(bad){ toast('One of those looks off. Check the numbers.'); return; }
+    if(!any){ toast('Enter at least one measurement'); return; }
+    var e=state.measures.filter(function(x){return x.d===d;})[0];
+    if(!e){ e={d:d}; state.measures.push(e); }
+    Object.keys(vals).forEach(function(k){ e[k]=vals[k]; });
+    save();
+    ['mWaist','mChest','mArm','mThigh'].forEach(function(id){ $(id).value=''; });
+    renderBody(); renderWeek(); toast('Logged');
+  }
+
+  /* ---------- weekly check-in ---------- */
+  function renderWeek(){
+    var card=$('weekCard'), es=sorted();
+    if(es.length<3 && !state.sessions.length){ card.hidden=true; return; }
+    card.hidden=false;
+    var items=[], focus=[], today=dayNum(todayStr()), u=state.unit, goal=goalOf(), r=calc();
+    function add(level,txt){
+      var tag = level==='ok'?['ok','OK'] : (level==='flag'?['flag','Check'] : ['info','Note']);
+      items.push('<li><span class="tag '+tag[0]+'">'+tag[1]+'</span><span>'+esc(txt)+'</span></li>');
+    }
+    // weight trend
+    if(es.length>=2){
+      var ma=movingAvg(es), lastN=dayNum(es[es.length-1].d), pi=-1;
+      for(var i=0;i<es.length;i++){ if(dayNum(es[i].d)<=lastN-7) pi=i; }
+      if(pi>=0){ var dW=ma[ma.length-1]-ma[pi]; add('info','Trend weight moved '+(dW>=0?'+':'−')+fmt(Math.abs(disp(dW)),1)+' '+u+' over the last week.'); }
+    }
+    // intake
+    var days=[];
+    for(var k=0;k<7;k++){ var di=dayIntake(dayKey(today-k)); if(di) days.push(di); }
+    var adherenceOff=false;
+    if(days.length>=3){
+      var avg=days.reduce(function(a,x){return a+x.kcal;},0)/days.length, dev=(avg-r.kcal)/r.kcal;
+      var off=Math.abs(dev)>0.1;
+      add(off?'flag':'ok','Averaged '+Math.round(avg)+' kcal on '+days.length+' logged days (target '+Math.round(r.kcal)+').');
+      if(off){ adherenceOff=true; focus.push('Your intake has run '+fmt(Math.abs(dev)*100,0)+'% '+(dev<0?'below':'above')+' target, so hit your target consistently before changing it.'); }
+      var ld=days.filter(function(x){return x.p!=null;});
+      if(ld.length>=3){
+        var hit=ld.filter(function(x){return x.p>=0.9*r.p;}).length, okp=hit/ld.length>=0.7;
+        add(okp?'ok':'flag','Protein target met on '+hit+' of '+ld.length+' logged days.');
+        if(!okp) focus.push('Raise your protein: you hit it on '+hit+' of '+ld.length+' logged days.');
+      }
+    } else {
+      add('info','Mark days complete on the Food tab to see how closely you hit your targets ('+days.length+' of 7 days so far).');
+    }
+    // strength
+    var lifts=liftMap(), prs=[], stalled=[], declined=[], active7=0;
+    lifts.forEach(function(m){
+      var p=m.pts, n=p.length, lastD=dayNum(p[n-1].d);
+      if(lastD>=today-6){ active7++; if(n>=2){ var pb=Math.max.apply(null,p.slice(0,n-1).map(function(x){return x.e;})); if(p[n-1].e>pb*1.001) prs.push(m.name); } }
+      if(n>=4 && lastD>=today-28){
+        var rb=Math.max.apply(null,p.slice(-3).map(function(x){return x.e;})), bb=Math.max.apply(null,p.slice(0,n-3).map(function(x){return x.e;}));
+        if(rb<=bb) stalled.push(m.name);
+        if(rb<bb*0.95) declined.push(m.name);
+      }
+    });
+    if(state.sessions.length){
+      if(prs.length) add('ok','New estimated max on '+prs.slice(0,3).join(', ')+(prs.length>3?' and '+(prs.length-3)+' more':'')+'.');
+      else add('info', active7 ? 'No new estimated maxes this week.' : 'No workouts logged in the last week.');
+      if(goal==='cut'){
+        if(declined.length){ add('flag','Strength has dropped on '+declined.slice(0,3).join(', ')+'. Your deficit may be too steep.'); focus.push('Strength is slipping, so consider easing the deficit.'); }
+      } else if(stalled.length>=2){
+        add('flag','Stalled on '+stalled.length+' lifts ('+stalled.slice(0,3).join(', ')+'). If you also feel run down, a lighter week at about 60 to 70% of usual volume can help.');
+        focus.push('Several lifts have stalled: check sleep and calories, and consider a lighter week.');
+      } else if(stalled.length===1){
+        add('info',stalled[0]+' has not improved in three sessions. Try smaller jumps or an extra rep before adding weight.');
+      }
+    }
+    // body
+    var bv=bodyVerdict();
+    if(bv){ add(bv.level,bv.text); if(bv.level==='flag') focus.push('Your waist is rising faster than your weight.'); }
+    // backup
+    if(es.length>=7 && (!state.lastBackup || today-dayNum(state.lastBackup)>=14)){
+      add('flag','No backup in the last two weeks. Export one from the Targets tab.');
+    }
+    // single focus line (pace changes come after adherence, so you fix intake first)
+    var line;
+    if(adherenceOff) line=focus[0];
+    else if(V.kind==='adjust') line=(V.dir>0?'Add ':'Cut ')+V.kcal+' kcal a day. ' + (focus[0]||'');
+    else line=focus[0] || 'Everything looks on track. Keep your targets and keep logging.';
+    $('weekFocus').textContent=line.trim();
+    $('weekList').innerHTML=items.join('');
+  }
+
+  /* ---------- backup and restore ---------- */
+  var pendingImport=null;
+  function backupText(){ return JSON.stringify({app:'lean-bulk',version:2,exported:new Date().toISOString(),state:state}); }
+  function renderBackupNote(){ $('bkNote').textContent = state.lastBackup ? 'Last backup: '+dayLabel(dayNum(state.lastBackup))+'.' : 'No backup yet.'; }
+  function markBackup(){ state.lastBackup=todayStr(); save(); renderBackupNote(); renderWeek(); }
+  function showText(){
+    $('txtArea').value=backupText(); $('txtBox').hidden=false;
+  }
+  async function exportData(){
+    var json=backupText(), name='lean-bulk-backup-'+todayStr()+'.json';
+    if(window.claude && window.claude.use){
+      try{
+        var dl=await window.claude.use('downloads');
+        if(dl){ await dl.save({filename:name,data:json}); markBackup(); toast('Backup saved'); return; }
+      }catch(e){ if(e && e.code==='declined') return; }
+      showText(); toast('Copy the backup text below and keep it somewhere safe'); return;
+    }
+    try{
+      var url=URL.createObjectURL(new Blob([json],{type:'application/json'})), a=document.createElement('a');
+      a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){URL.revokeObjectURL(url);},3000);
+      markBackup(); toast('Backup downloaded');
+    }catch(e){ showText(); toast('Copy the backup text below instead'); }
+  }
+  function summarize(st){
+    return (st.entries||[]).length+' weigh-ins, '+(st.log||[]).length+' food entries, '+(st.sessions||[]).length+' workouts and '+(st.routines||[]).length+' routines';
+  }
+  function parseBackup(txt){
+    var j; try{ j=JSON.parse(txt); }catch(e){ return null; }
+    var st=(j && j.state) ? j.state : j;
+    if(!st || !st.s || !Array.isArray(st.entries)) return null;
+    return st;
+  }
+  function stageImport(txt){
+    var st=parseBackup(txt);
+    if(!st){ toast('That does not look like a Lean bulk backup'); return; }
+    pendingImport=st;
+    $('impMsg').textContent='This backup has '+summarize(st)+'. Restoring replaces everything currently in the app.';
+    $('impBox').hidden=false;
+  }
+  function refreshAll(){
+    fillForm(); updateResults(); renderTrend(); renderWorkout(); renderFood(); renderBody(); setTitle(); renderBackupNote();
+  }
+  function applyImport(){
+    if(!pendingImport) return;
+    state=pendingImport; pendingImport=null; ensureDefaults(); save();
+    $('impBox').hidden=true; $('txtBox').hidden=true; W.view=state.active?'active':'home'; W.draft=null;
+    refreshAll(); toast('Backup restored');
+  }
+  (function bindExtra(){
+    $('mBtn').onclick=logBody;
+    $('expBtn').onclick=exportData;
+    $('txtBtn').onclick=function(){ if($('txtBox').hidden) showText(); else $('txtBox').hidden=true; };
+    $('txtCopy').onclick=function(){
+      var ta=$('txtArea'); ta.select();
+      var ok=false;
+      try{ ok=document.execCommand('copy'); }catch(e){}
+      if(!ok && navigator.clipboard){ navigator.clipboard.writeText(ta.value).then(function(){toast('Copied');},function(){toast('Press and hold the text to copy it');}); }
+      else toast(ok?'Copied':'Press and hold the text to copy it');
+    };
+    $('txtRestore').onclick=function(){ stageImport($('txtArea').value); };
+    $('impFile').addEventListener('change',function(){
+      var f=this.files&&this.files[0]; this.value=''; if(!f) return;
+      var fr=new FileReader(); fr.onload=function(){ stageImport(String(fr.result)); }; fr.onerror=function(){ toast('Could not read that file'); };
+      fr.readAsText(f);
+    });
+    $('impGo').onclick=applyImport;
+    $('impNo').onclick=function(){ pendingImport=null; $('impBox').hidden=true; };
+  })();
+
+  /* ---------- food extras: copy day, recents ---------- */
+  function renderRecent(){
+    var seen={}, rec=[];
+    state.log.slice().reverse().forEach(function(x){
+      var k=nk(x.name)+'|'+nk(x.unit);
+      if(!seen[k] && rec.length<6){ seen[k]=1; rec.push(x); }
+    });
+    $('recentCard').hidden=!rec.length;
+    $('recentList').innerHTML=rec.map(function(x){
+      var q=x.q>0?x.q:1;
+      return '<li data-id="'+x.id+'"><span>'+esc(x.name)+'<br><span class="muted small">'+esc(x.unit)+' · '+Math.round(x.kcal/q)+' kcal · P'+Math.round(x.p/q)+' C'+Math.round(x.c/q)+' F'+Math.round(x.f/q)+'</span></span><button class="btn ghost sm" data-fa="useRecent">Add</button></li>';
+    }).join('');
+  }
+  function copyPrevDay(btn){
+    var d=fDay(), dn=dayNum(d), best=null;
+    state.log.forEach(function(x){ var n=dayNum(x.d); if(n<dn && (best===null || n>best)) best=n; });
+    if(best===null){ toast('There is no earlier day to copy'); return; }
+    if(sumLog(d) && !arm(btn,'copyday','This day has food. Tap again to add')) return;
+    var key=dayKey(best), items=state.log.filter(function(x){return x.d===key;});
+    items.forEach(function(x){ state.log.push(Object.assign({},x,{id:uid(),d:d})); });
+    save(); renderFood(); renderTrend(); updateResults();
+    toast('Copied '+items.length+' foods from '+dayLabel(best));
+  }
+
+  /* ---------- tabs ---------- */
+  function showTab(name){
+    ['trend','food','workout','targets'].forEach(function(t){
+      $('tab-'+t).hidden = t!==name;
+      $('t-'+t).setAttribute('aria-selected', t===name?'true':'false');
+    });
+    if(name==='workout') renderWorkout();
+    if(name==='food') renderFood();
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll('.tabs button').forEach(function(b){
+    b.onclick=function(){ showTab(b.dataset.tab); };
+  });
+
+  /* ---------- init ---------- */
+  load();
+  $('logDate').value=todayStr(); $('logDate').max=todayStr();
+  $('logBtn').onclick=logWeight;
+  $('logW').addEventListener('keydown',function(e){ if(e.key==='Enter') logWeight(); });
+  W.view = state.active ? 'active' : 'home';
+  bindForm(); $('restSkip').onclick=stopRest; fillForm(); updateResults(); renderTrend(); renderWorkout(); renderFood(); renderBody(); renderBackupNote(); setTitle();
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){ window.addEventListener('load',function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); }); }
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "Lean bulk",
+  "short_name": "Lean bulk",
+  "description": "Weight trend, macros, food log and workouts for lifters",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#DCE2E5",
+  "theme_color": "#DCE2E5",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
